@@ -6,7 +6,7 @@ import periodictable
 if 'selected_elements' not in st.session_state:
     st.session_state.selected_elements = []
 
-# Function to generate the periodic table using HTML and CSS
+# Function to generate the periodic table using Streamlit buttons
 def generate_periodic_table():
     # Define the periodic table layout (classical layout)
     layout = [
@@ -22,73 +22,29 @@ def generate_periodic_table():
         ["", "", "Th", "Pa", "U", "Np", "Pu", "Am", "Cm", "Bk", "Cf", "Es", "Fm", "Md", "No", "Lr", "", ""]
     ]
 
-    # CSS for styling the periodic table
-    st.markdown(
-        """
-        <style>
-        .periodic-table {
-            display: grid;
-            grid-template-columns: repeat(16, 50px);
-            gap: 5px;
-            margin: 20px 0;
-        }
-        .element {
-            width: 50px;
-            height: 50px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            background-color: #f9f9f9;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: bold;
-        }
-        .element:hover {
-            background-color: #ddd;
-        }
-        .element.selected {
-            background-color: #4CAF50;
-            color: white;
-        }
-        </style>
-        """,
-        unsafe_allow_html=True
-    )
-
-    # HTML for the periodic table
-    table_html = '<div class="periodic-table">'
-    for row in layout:
-        for element in row:
-            if element:
-                is_selected = "selected" if element in st.session_state.selected_elements else ""
-                table_html += f'<div class="element {is_selected}" onclick="selectElement(\'{element}\')">{element}</div>'
-            else:
-                table_html += '<div class="element" style="visibility: hidden;"></div>'
-    table_html += '</div>'
-
-    # JavaScript to handle element selection
-    st.markdown(
-        """
-        <script>
-        function selectElement(element) {
-            fetch('/select_element?element=' + element)
-                .then(response => response.json())
-                .then(data => {
-                    window.location.reload();
-                });
-        }
-        </script>
-        """,
-        unsafe_allow_html=True
-    )
-
     # Display the periodic table
-    st.markdown(table_html, unsafe_allow_html=True)
+    with st.expander("Click to open Periodic Table", expanded=True):
+        for row in layout:
+            cols = st.columns(len(row))
+            for col, element in zip(cols, row):
+                if element:
+                    # Create a button for each element
+                    if col.button(
+                        element,
+                        key=f"btn_{element}",
+                        help=f"Select {element}"
+                    ):
+                        # Toggle selection
+                        if element in st.session_state.selected_elements:
+                            st.session_state.selected_elements.remove(element)
+                        else:
+                            st.session_state.selected_elements.append(element)
+                else:
+                    # Add an empty space for alignment
+                    col.write("")
 
 # Streamlit UI
-st.title("Welcome to Bulk Metallic Glass Design Calculatorr")
+st.title("Welcome to Bulk Metallic Glass Design Calculator")
 
 # Step 1: Number of Elements
 num_elements = st.number_input("Number of elements", min_value=1, max_value=10, step=1, value=2)
@@ -113,7 +69,9 @@ if len(selected_elements) == num_elements:
     default_fraction = 100.0 / num_elements
     element_fractions = {}
     for elem in selected_elements:
-        element_fractions[elem] = st.number_input(f"{elem} fraction (%)", min_value=0.0, max_value=100.0, step=0.1, value=default_fraction)
+        element_fractions[elem] = st.number_input(
+            f"{elem} fraction (%)", min_value=0.0, max_value=100.0, step=0.1, value=default_fraction
+        )
 
     # Ensure the total fraction is 100%
     total_fraction = sum(element_fractions.values())
@@ -129,11 +87,5 @@ if len(selected_elements) == num_elements:
     st.write("Critical Diameter of Alloy (d_c) [mm]: 15")
     st.write("Critical Cooling Rate (R_c) [K/s]: 586")
 
-# Handle element selection via query parameters
-if st.experimental_get_query_params().get("element"):
-    element = st.experimental_get_query_params()["element"][0]
-    if element in st.session_state.selected_elements:
-        st.session_state.selected_elements.remove(element)
-    else:
-        st.session_state.selected_elements.append(element)
-    st.experimental_set_query_params()
+# Display selected elements
+st.write("Selected Elements:", st.session_state.selected_elements)
