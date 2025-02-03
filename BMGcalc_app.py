@@ -2,8 +2,12 @@ import streamlit as st
 import pandas as pd
 import periodictable
 
-# Function to display periodic table layout
-def generate_periodic_table(selected_elements):
+# Initialize session state for selected elements
+if 'selected_elements' not in st.session_state:
+    st.session_state.selected_elements = []
+
+# Function to display periodic table layout with selectable buttons
+def generate_periodic_table():
     layout = [
         ["H", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "He"],
         ["Li", "Be", "", "", "", "", "", "", "", "", "", "B", "C", "N", "O", "F", "Ne"],
@@ -12,15 +16,17 @@ def generate_periodic_table(selected_elements):
         ["Rb", "Sr", "Y", "Zr", "Nb", "Mo", "Tc", "Ru", "Rh", "Pd", "Ag", "Cd", "In", "Sn", "Sb", "Te", "I", "Xe"],
         ["Cs", "Ba", "", "Hf", "Ta", "W", "Re", "Os", "Ir", "Pt", "Au", "Hg", "Tl", "Pb", "Bi", "Po", "At", "Rn"]
     ]
-    selected = []
+    
     with st.expander("Click to open Periodic Table", expanded=True):
         for row in layout:
             cols = st.columns(len(row))
             for col, element in zip(cols, row):
                 if element:
                     if col.button(element, key=element):
-                        selected.append(element)
-    return selected
+                        if element in st.session_state.selected_elements:
+                            st.session_state.selected_elements.remove(element)  # Deselect
+                        else:
+                            st.session_state.selected_elements.append(element)  # Select
 
 # Streamlit UI
 st.title("Multi-Component Alloy Property Predictor")
@@ -30,7 +36,8 @@ num_elements = st.number_input("Number of elements", min_value=1, max_value=10, 
 
 # Step 2: Periodic Table Popup
 st.subheader("Select Elements")
-selected_elements = generate_periodic_table([])
+generate_periodic_table()
+selected_elements = st.session_state.selected_elements
 
 # Step 3: Element Fraction Input
 if len(selected_elements) == num_elements:
