@@ -34,12 +34,21 @@ st.title("Multi-Component Alloy Property Predictor")
 # Step 1: Number of Elements
 num_elements = st.number_input("Number of elements", min_value=1, max_value=10, step=1, value=2)
 
-# Step 2: Periodic Table Popup
-st.subheader("Select Elements")
-generate_periodic_table()
-selected_elements = st.session_state.selected_elements
+# Step 2: Element Selection Method
+selection_method = st.radio("Choose element selection method:", ("Periodic Table", "Dropdown"))
 
-# Step 3: Element Fraction Input
+# Step 3: Periodic Table Popup
+if selection_method == "Periodic Table":
+    st.subheader("Select Elements")
+    generate_periodic_table()
+    selected_elements = st.session_state.selected_elements
+else:
+    st.subheader("Select Elements from Dropdown")
+    all_elements = [el.symbol for el in periodictable.elements if el.symbol]
+    selected_elements = st.multiselect("Choose elements:", all_elements, default=all_elements[:num_elements])
+    st.session_state.selected_elements = selected_elements
+
+# Step 4: Element Fraction Input
 if len(selected_elements) == num_elements:
     st.subheader("Enter Element Fraction (%)")
     element_fractions = {}
