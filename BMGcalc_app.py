@@ -119,11 +119,14 @@ if len(selected_elements) == num_elements:
         st.markdown('<div class="warning">Total fraction must be 100%</div>', unsafe_allow_html=True)
 
     st.markdown('<div class="subtitle">Prediction Panel</div>', unsafe_allow_html=True)
-    st.write("Predicted Phase: CMG")
-    st.write("Glass Transition Temperature (T_g) [K]: 632")
-    st.write("Crystallization Temperature (T_c) [K]: 650")
-    st.write("Liquidus Temperature (T_l) [K]: 756")
-    st.write("Critical Diameter of Alloy (d_c) [mm]: 15")
-    st.write("Critical Cooling Rate (R_c) [K/s]: 586")
+    st.markdown("""
+    **Predicted Phase:** CMG  
+    **Glass Transition Temperature (T_g) [K]:** 632  
+    **Crystallization Temperature (T_c) [K]:** 650  
+    **Liquidus Temperature (T_l) [K]:** 756  
+    **Critical Diameter of Alloy (d_c) [mm]:** 15  
+    **Critical Cooling Rate (R_c) [K/s]:** 586  
+    """
+    )
 
-st.write("Selected Elements:", st.session_state.selected_elements)
+st.write("**Selected Elements:**", ", ".join(st.session_state.selected_elements))
