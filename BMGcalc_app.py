@@ -6,8 +6,9 @@ import periodictable
 if 'selected_elements' not in st.session_state:
     st.session_state.selected_elements = []
 
-# Function to display periodic table layout with selectable buttons
+# Function to generate the periodic table using HTML and CSS
 def generate_periodic_table():
+    # Define the periodic table layout
     layout = [
         ["H", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "He"],
         ["Li", "Be", "", "", "", "", "", "", "", "", "", "B", "C", "N", "O", "F", "Ne"],
@@ -16,19 +17,71 @@ def generate_periodic_table():
         ["Rb", "Sr", "Y", "Zr", "Nb", "Mo", "Tc", "Ru", "Rh", "Pd", "Ag", "Cd", "In", "Sn", "Sb", "Te", "I", "Xe"],
         ["Cs", "Ba", "", "Hf", "Ta", "W", "Re", "Os", "Ir", "Pt", "Au", "Hg", "Tl", "Pb", "Bi", "Po", "At", "Rn"]
     ]
-    
-    with st.expander("Click to open Periodic Table", expanded=True):
-        for row in layout:
-            # Create columns with dynamic width based on element symbol length
-            cols = st.columns([2 if element else 0.5 for element in row])
-            for col, element in zip(cols, row):
-                if element:
-                    # Use a fixed-width button style
-                    if col.button(element, key=element, use_container_width=True):
-                        if element in st.session_state.selected_elements:
-                            st.session_state.selected_elements.remove(element)  # Deselect
-                        else:
-                            st.session_state.selected_elements.append(element)  # Select
+
+    # CSS for styling the periodic table
+    st.markdown(
+        """
+        <style>
+        .periodic-table {
+            display: grid;
+            grid-template-columns: repeat(18, 50px);
+            gap: 5px;
+            margin: 20px 0;
+        }
+        .element {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .element:hover {
+            background-color: #ddd;
+        }
+        .element.selected {
+            background-color: #4CAF50;
+            color: white;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
+    # HTML for the periodic table
+    table_html = '<div class="periodic-table">'
+    for row in layout:
+        for element in row:
+            if element:
+                is_selected = "selected" if element in st.session_state.selected_elements else ""
+                table_html += f'<div class="element {is_selected}" onclick="selectElement(\'{element}\')">{element}</div>'
+            else:
+                table_html += '<div class="element" style="visibility: hidden;"></div>'
+    table_html += '</div>'
+
+    # JavaScript to handle element selection
+    st.markdown(
+        """
+        <script>
+        function selectElement(element) {
+            fetch('/select_element?element=' + element)
+                .then(response => response.json())
+                .then(data => {
+                    window.location.reload();
+                });
+        }
+        </script>
+        """,
+        unsafe_allow_html=True
+    )
+
+    # Display the periodic table
+    st.markdown(table_html, unsafe_allow_html=True)
 
 # Streamlit UI
 st.title("Multi-Component Alloy Property Predictor")
@@ -71,3 +124,12 @@ if len(selected_elements) == num_elements:
     st.write("Liquidus Temperature (T_l) [K]: 756")
     st.write("Critical Diameter of Alloy (d_c) [mm]: 15")
     st.write("Critical Cooling Rate (R_c) [K/s]: 586")
+
+# Handle element selection via query parameters
+if st.experimental_get_query_params().get("element"):
+    element = st.experimental_get_query_params()["element"][0]
+    if element in st.session_state.selected_elements:
+        st.session_state.selected_elements.remove(element)
+    else:
+        st.session_state.selected_elements.append(element)
+    st.experimental_set_query_params()
