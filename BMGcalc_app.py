@@ -1,21 +1,26 @@
 import streamlit as st
 import pandas as pd
-import matplotlib.pyplot as plt
 import periodictable
 
-# Function to create periodic table buttons
-def display_periodic_table(selected_elements):
-    elements = [e.symbol for e in periodictable.elements if e.number]
-    cols = 18
-    
-    table = ""  # HTML table structure
-    for i, elem in enumerate(elements):
-        checked = "selected" if elem in selected_elements else ""
-        table += f"<button class='element-btn {checked}' onclick='selectElement(\"{elem}\")'>{elem}</button>"
-        if (i + 1) % cols == 0:
-            table += "<br>"
-    
-    return table
+# Function to display periodic table layout
+def generate_periodic_table(selected_elements):
+    layout = [
+        ["H", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "He"],
+        ["Li", "Be", "", "", "", "", "", "", "", "", "", "B", "C", "N", "O", "F", "Ne"],
+        ["Na", "Mg", "", "", "", "", "", "", "", "", "", "Al", "Si", "P", "S", "Cl", "Ar"],
+        ["K", "Ca", "Sc", "Ti", "V", "Cr", "Mn", "Fe", "Co", "Ni", "Cu", "Zn", "Ga", "Ge", "As", "Se", "Br", "Kr"],
+        ["Rb", "Sr", "Y", "Zr", "Nb", "Mo", "Tc", "Ru", "Rh", "Pd", "Ag", "Cd", "In", "Sn", "Sb", "Te", "I", "Xe"],
+        ["Cs", "Ba", "", "Hf", "Ta", "W", "Re", "Os", "Ir", "Pt", "Au", "Hg", "Tl", "Pb", "Bi", "Po", "At", "Rn"]
+    ]
+    selected = []
+    with st.expander("Click to open Periodic Table", expanded=True):
+        for row in layout:
+            cols = st.columns(len(row))
+            for col, element in zip(cols, row):
+                if element:
+                    if col.button(element, key=element):
+                        selected.append(element)
+    return selected
 
 # Streamlit UI
 st.title("Multi-Component Alloy Property Predictor")
@@ -23,9 +28,9 @@ st.title("Multi-Component Alloy Property Predictor")
 # Step 1: Number of Elements
 num_elements = st.number_input("Number of elements", min_value=1, max_value=10, step=1, value=2)
 
-# Step 2: Periodic Table Selection
+# Step 2: Periodic Table Popup
 st.subheader("Select Elements")
-selected_elements = st.multiselect("Click to select elements", [e.symbol for e in periodictable.elements if e.number])
+selected_elements = generate_periodic_table([])
 
 # Step 3: Element Fraction Input
 if len(selected_elements) == num_elements:
