@@ -198,7 +198,7 @@ st.markdown(
         margin: 10px 0;
     }
     .prediction-box .property strong {
-        min-width: 250px;
+        min-width: 300px; /* Fixed width for property names */
         font-weight: bold;
         color: #333;
     }
@@ -209,6 +209,8 @@ st.markdown(
         border: 1px solid #4CAF50;
         font-weight: bold;
         color: #00796b;
+        min-width: 100px; /* Fixed width for value boxes */
+        text-align: center; /* Center-align text inside value boxes */
     }
     </style>
     <div class="prediction-box">
