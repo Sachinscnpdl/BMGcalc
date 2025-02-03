@@ -11,7 +11,7 @@ def display_periodic_table(selected_elements):
     table = ""  # HTML table structure
     for i, elem in enumerate(elements):
         checked = "selected" if elem in selected_elements else ""
-        table += f"<button class='element-btn {checked}' onclick='selectElement("{elem}")'>{elem}</button>"
+        table += f"<button class='element-btn {checked}' onclick='selectElement(\"{elem}\")'>{elem}</button>"
         if (i + 1) % cols == 0:
             table += "<br>"
     
