@@ -11,3 +11,4 @@ array_to_latex
 setuptools
 scikit-image
 plotly
+periodictable
