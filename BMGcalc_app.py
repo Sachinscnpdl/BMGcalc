@@ -29,11 +29,14 @@ def generate_periodic_table():
             font-size: 36px;
             font-weight: bold;
             color: #4CAF50;
+            margin-bottom: 20px;
         }
         .subtitle {
             font-size: 24px;
             font-weight: bold;
             color: #FFA500;
+            margin-top: 20px;
+            margin-bottom: 10px;
         }
         .periodic-table {
             display: grid;
@@ -65,16 +68,34 @@ def generate_periodic_table():
         .warning {
             color: red;
             font-size: 18px;
+            font-weight: bold;
+            margin-top: 10px;
         }
         .prediction-box {
             background-color: #f9f9f9;
-            padding: 15px;
+            padding: 20px;
             border-radius: 10px;
             font-size: 18px;
             font-weight: bold;
-            text-align: center;
+            text-align: left;
             color: #333;
             box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
+        .prediction-box h3 {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4CAF50;
+            margin-bottom: 15px;
+        }
+        .prediction-box p {
+            margin: 10px 0;
+        }
+        .selected-elements {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            margin-top: 20px;
         }
         </style>
         """,
@@ -101,12 +122,16 @@ def generate_periodic_table():
                 col.write("")
     st.markdown('</div>', unsafe_allow_html=True)
 
+# Streamlit UI
 st.markdown('<div class="title">Welcome to Bulk Metallic Glass Design Calculator</div>', unsafe_allow_html=True)
 
+# Step 1: Number of Elements
 num_elements = st.number_input("Number of elements", min_value=1, max_value=10, step=1, value=2)
 
+# Step 2: Element Selection Method
 selection_method = st.radio("Choose element selection method:", ("Periodic Table", "Dropdown"))
 
+# Step 3: Periodic Table Popup
 if selection_method == "Periodic Table":
     st.markdown('<div class="subtitle">Select Elements</div>', unsafe_allow_html=True)
     generate_periodic_table()
@@ -117,30 +142,37 @@ else:
     selected_elements = st.multiselect("Choose elements:", all_elements, default=all_elements[:num_elements])
     st.session_state.selected_elements = selected_elements
 
+# Step 4: Element Fraction Input
 if len(selected_elements) == num_elements:
     st.markdown('<div class="subtitle">Enter Element Fraction (%)</div>', unsafe_allow_html=True)
     default_fraction = 100.0 / num_elements
     element_fractions = {}
     for elem in selected_elements:
-        element_fractions[elem] = st.number_input(f"{elem} fraction (%)", min_value=0.0, max_value=100.0, step=0.1, value=default_fraction)
+        element_fractions[elem] = st.number_input(
+            f"{elem} fraction (%)", min_value=0.0, max_value=100.0, step=0.1, value=default_fraction
+        )
 
+    # Ensure the total fraction is 100%
     total_fraction = sum(element_fractions.values())
     if total_fraction != 100:
         st.markdown('<div class="warning">Total fraction must be 100%</div>', unsafe_allow_html=True)
 
+    # Output Section: Predictions
     st.markdown('<div class="subtitle">Prediction Panel</div>', unsafe_allow_html=True)
     st.markdown(
         """
         <div class="prediction-box">
-        **Predicted Phase:** CMG  
-        **Glass Transition Temperature (T_g) [K]:** 632  
-        **Crystallization Temperature (T_c) [K]:** 650  
-        **Liquidus Temperature (T_l) [K]:** 756  
-        **Critical Diameter of Alloy (d_c) [mm]:** 15  
-        **Critical Cooling Rate (R_c) [K/s]:** 586  
+            <h3>Predicted Properties</h3>
+            <p><strong>Predicted Phase:</strong> CMG</p>
+            <p><strong>Glass Transition Temperature (T_g) [K]:</strong> 632</p>
+            <p><strong>Crystallization Temperature (T_c) [K]:</strong> 650</p>
+            <p><strong>Liquidus Temperature (T_l) [K]:</strong> 756</p>
+            <p><strong>Critical Diameter of Alloy (d_c) [mm]:</strong> 15</p>
+            <p><strong>Critical Cooling Rate (R_c) [K/s]:</strong> 586</p>
         </div>
         """,
         unsafe_allow_html=True
     )
 
-st.write("**Selected Elements:**", ", ".join(st.session_state.selected_elements))
+# Display selected elements
+st.markdown('<div class="selected-elements">Selected Elements: ' + ", ".join(st.session_state.selected_elements) + '</div>', unsafe_allow_html=True)
