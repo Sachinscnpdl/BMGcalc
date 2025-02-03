@@ -19,11 +19,12 @@ def generate_periodic_table():
     
     with st.expander("Click to open Periodic Table", expanded=True):
         for row in layout:
-            # Create columns with adjusted width
-            cols = st.columns([1.2 if element else 0.5 for element in row])
+            # Create columns with dynamic width based on element symbol length
+            cols = st.columns([2 if element else 0.5 for element in row])
             for col, element in zip(cols, row):
                 if element:
-                    if col.button(element, key=element):
+                    # Use a fixed-width button style
+                    if col.button(element, key=element, use_container_width=True):
                         if element in st.session_state.selected_elements:
                             st.session_state.selected_elements.remove(element)  # Deselect
                         else:
