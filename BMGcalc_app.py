@@ -88,7 +88,7 @@ def generate_periodic_table():
     st.markdown(table_html, unsafe_allow_html=True)
 
 # Streamlit UI
-st.title("Multi-Component Alloy Property Predictor")
+st.title("Welcome to Bulk Metallic Glass Design Calculatorr")
 
 # Step 1: Number of Elements
 num_elements = st.number_input("Number of elements", min_value=1, max_value=10, step=1, value=2)
