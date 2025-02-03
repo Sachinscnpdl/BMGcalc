@@ -97,6 +97,14 @@ def generate_periodic_table():
             color: #333;
             margin-top: 20px;
         }
+        .dropdown-container {
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        .dropdown-container .stMultiSelect {
+            font-size: 18px;
+            font-weight: bold;
+        }
         </style>
         """,
         unsafe_allow_html=True
@@ -131,23 +139,28 @@ num_elements = st.number_input("Number of elements", min_value=1, max_value=10, 
 # Step 2: Element Selection Method
 selection_method = st.radio("Choose element selection method:", ("Periodic Table", "Dropdown"))
 
-# Step 3: Periodic Table Popup
+# Step 3: Periodic Table or Dropdown Selection
+st.markdown('<div class="subtitle">Select Elements</div>', unsafe_allow_html=True)
 if selection_method == "Periodic Table":
-    st.markdown('<div class="subtitle">Select Elements</div>', unsafe_allow_html=True)
     generate_periodic_table()
-    selected_elements = st.session_state.selected_elements
 else:
-    st.markdown('<div class="subtitle">Select Elements from Dropdown</div>', unsafe_allow_html=True)
+    st.markdown('<div class="dropdown-container">', unsafe_allow_html=True)
     all_elements = [el.symbol for el in periodictable.elements if el.symbol]
-    selected_elements = st.multiselect("Choose elements:", all_elements, default=all_elements[:num_elements])
+    selected_elements = st.multiselect(
+        "Choose elements:", 
+        all_elements, 
+        default=all_elements[:num_elements],
+        key="dropdown_elements"
+    )
     st.session_state.selected_elements = selected_elements
+    st.markdown('</div>', unsafe_allow_html=True)
 
 # Step 4: Element Fraction Input
-if len(selected_elements) == num_elements:
+if len(st.session_state.selected_elements) == num_elements:
     st.markdown('<div class="subtitle">Enter Element Fraction (%)</div>', unsafe_allow_html=True)
     default_fraction = 100.0 / num_elements
     element_fractions = {}
-    for elem in selected_elements:
+    for elem in st.session_state.selected_elements:
         element_fractions[elem] = st.number_input(
             f"{elem} fraction (%)", min_value=0.0, max_value=100.0, step=0.1, value=default_fraction
         )
