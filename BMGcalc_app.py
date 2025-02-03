@@ -51,9 +51,10 @@ else:
 # Step 4: Element Fraction Input
 if len(selected_elements) == num_elements:
     st.subheader("Enter Element Fraction (%)")
+    default_fraction = 100.0 / num_elements
     element_fractions = {}
     for elem in selected_elements:
-        element_fractions[elem] = st.number_input(f"{elem} fraction (%)", min_value=0.0, max_value=100.0, step=0.1)
+        element_fractions[elem] = st.number_input(f"{elem} fraction (%)", min_value=0.0, max_value=100.0, step=0.1, value=default_fraction)
 
     # Ensure the total fraction is 100%
     total_fraction = sum(element_fractions.values())
