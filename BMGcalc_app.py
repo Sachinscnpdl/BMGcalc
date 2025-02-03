@@ -66,6 +66,16 @@ def generate_periodic_table():
             color: red;
             font-size: 18px;
         }
+        .prediction-box {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+            color: #333;
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+        }
         </style>
         """,
         unsafe_allow_html=True
@@ -119,14 +129,18 @@ if len(selected_elements) == num_elements:
         st.markdown('<div class="warning">Total fraction must be 100%</div>', unsafe_allow_html=True)
 
     st.markdown('<div class="subtitle">Prediction Panel</div>', unsafe_allow_html=True)
-    st.markdown("""
-    **Predicted Phase:** CMG  
-    **Glass Transition Temperature (T_g) [K]:** 632  
-    **Crystallization Temperature (T_c) [K]:** 650  
-    **Liquidus Temperature (T_l) [K]:** 756  
-    **Critical Diameter of Alloy (d_c) [mm]:** 15  
-    **Critical Cooling Rate (R_c) [K/s]:** 586  
-    """
+    st.markdown(
+        """
+        <div class="prediction-box">
+        **Predicted Phase:** CMG  
+        **Glass Transition Temperature (T_g) [K]:** 632  
+        **Crystallization Temperature (T_c) [K]:** 650  
+        **Liquidus Temperature (T_l) [K]:** 756  
+        **Critical Diameter of Alloy (d_c) [mm]:** 15  
+        **Critical Cooling Rate (R_c) [K/s]:** 586  
+        </div>
+        """,
+        unsafe_allow_html=True
     )
 
 st.write("**Selected Elements:**", ", ".join(st.session_state.selected_elements))
