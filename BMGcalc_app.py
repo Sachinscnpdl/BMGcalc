@@ -28,7 +28,7 @@ def generate_periodic_table():
         <style>
         .periodic-table {
             display: grid;
-            grid-template-columns: repeat(18, 50px);
+            grid-template-columns: repeat(16, 50px);
             gap: 5px;
             margin: 20px 0;
         }
