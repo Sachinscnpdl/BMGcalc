@@ -172,20 +172,72 @@ if len(st.session_state.selected_elements) == num_elements:
 
     # Output Section: Predictions
     st.markdown('<div class="subtitle">Prediction Panel</div>', unsafe_allow_html=True)
-    st.markdown(
-        """
-        <div class="prediction-box">
-            <h3>Predicted Properties</h3>
-            <p><strong>Predicted Phase:</strong> CMG</p>
-            <p><strong>Glass Transition Temperature (T_g) [K]:</strong> 632</p>
-            <p><strong>Crystallization Temperature (T_c) [K]:</strong> 650</p>
-            <p><strong>Liquidus Temperature (T_l) [K]:</strong> 756</p>
-            <p><strong>Critical Diameter of Alloy (d_c) [mm]:</strong> 15</p>
-            <p><strong>Critical Cooling Rate (R_c) [K/s]:</strong> 586</p>
+st.markdown(
+    """
+    <style>
+    .prediction-box {
+        background-color: #f9f9f9;
+        padding: 20px;
+        border-radius: 10px;
+        font-size: 18px;
+        font-weight: bold;
+        text-align: left;
+        color: #333;
+        box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+        margin-top: 20px;
+    }
+    .prediction-box h3 {
+        font-size: 24px;
+        font-weight: bold;
+        color: #4CAF50;
+        margin-bottom: 15px;
+    }
+    .prediction-box .property {
+        display: flex;
+        align-items: center;
+        margin: 10px 0;
+    }
+    .prediction-box .property strong {
+        min-width: 250px;
+        font-weight: bold;
+        color: #333;
+    }
+    .prediction-box .value-box {
+        background-color: #e0f7fa;
+        padding: 8px 12px;
+        border-radius: 5px;
+        border: 1px solid #4CAF50;
+        font-weight: bold;
+        color: #00796b;
+    }
+    </style>
+    <div class="prediction-box">
+        <h3>Predicted Properties</h3>
+        <div class="property">
+            <strong>Predicted Phase:</strong>
+            <div class="value-box">CMG</div>
         </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-# Display selected elements
-st.markdown('<div class="selected-elements">Selected Elements: ' + ", ".join(st.session_state.selected_elements) + '</div>', unsafe_allow_html=True)
+        <div class="property">
+            <strong>Glass Transition Temperature (T<sub>g</sub>) [K]:</strong>
+            <div class="value-box">632</div>
+        </div>
+        <div class="property">
+            <strong>Crystallization Temperature (T<sub>c</sub>) [K]:</strong>
+            <div class="value-box">650</div>
+        </div>
+        <div class="property">
+            <strong>Liquidus Temperature (T<sub>l</sub>) [K]:</strong>
+            <div class="value-box">756</div>
+        </div>
+        <div class="property">
+            <strong>Critical Diameter of Alloy (d<sub>c</sub>) [mm]:</strong>
+            <div class="value-box">15</div>
+        </div>
+        <div class="property">
+            <strong>Critical Cooling Rate (R<sub>c</sub>) [K/s]:</strong>
+            <div class="value-box">586</div>
+        </div>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
