@@ -19,7 +19,8 @@ def generate_periodic_table():
     
     with st.expander("Click to open Periodic Table", expanded=True):
         for row in layout:
-            cols = st.columns(len(row))
+            # Create columns with adjusted width
+            cols = st.columns([1.2 if element else 0.5 for element in row])
             for col, element in zip(cols, row):
                 if element:
                     if col.button(element, key=element):
