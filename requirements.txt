@@ -4,9 +4,9 @@ numpy
 streamlit
 matminer
 seaborn
-pymatgen==2023.8.10
+pymatgen
 tensorflow
-keras==2.12.0
+keras
 array_to_latex
 setuptools
 scikit-image
