@@ -8,7 +8,6 @@ if 'selected_elements' not in st.session_state:
 
 # Function to generate the periodic table using HTML and CSS
 def generate_periodic_table():
-    # Define the periodic table layout (classical layout)
     layout = [
         ["H", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "He"],
         ["Li", "Be", "", "", "", "", "", "", "", "", "", "B", "C", "N", "O", "F", "Ne"],
@@ -22,28 +21,39 @@ def generate_periodic_table():
         ["", "", "Th", "Pa", "U", "Np", "Pu", "Am", "Cm", "Bk", "Cf", "Es", "Fm", "Md", "No", "Lr", "", ""]
     ]
 
-    # CSS for styling the periodic table
     st.markdown(
         """
         <style>
+        .title {
+            text-align: center;
+            font-size: 36px;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        .subtitle {
+            font-size: 24px;
+            font-weight: bold;
+            color: #FFA500;
+        }
         .periodic-table {
             display: grid;
-            grid-template-columns: repeat(18, 50px);
+            grid-template-columns: repeat(18, 60px);
             gap: 5px;
             margin: 20px 0;
         }
         .element {
-            width: 50px;
-            height: 50px;
+            width: 60px;
+            height: 60px;
             display: flex;
             align-items: center;
             justify-content: center;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            background-color: #f9f9f9;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            background-color: #f0f0f0;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 18px;
             font-weight: bold;
+            transition: 0.3s;
         }
         .element:hover {
             background-color: #ddd;
@@ -52,73 +62,63 @@ def generate_periodic_table():
             background-color: #4CAF50;
             color: white;
         }
+        .warning {
+            color: red;
+            font-size: 18px;
+        }
         </style>
         """,
         unsafe_allow_html=True
     )
 
-    # Display the periodic table
     st.markdown('<div class="periodic-table">', unsafe_allow_html=True)
     for row in layout:
         cols = st.columns(len(row))
         for col, element in zip(cols, row):
             if element:
-                # Determine if the element is selected
                 is_selected = element in st.session_state.selected_elements
-                # Create a button for the element
                 if col.button(
                     element,
                     key=f"btn_{element}",
                     help=f"Select {element}",
                     type="primary" if is_selected else "secondary"
                 ):
-                    # Toggle selection
                     if element in st.session_state.selected_elements:
                         st.session_state.selected_elements.remove(element)
                     else:
                         st.session_state.selected_elements.append(element)
             else:
-                # Add an empty space for alignment
                 col.write("")
     st.markdown('</div>', unsafe_allow_html=True)
 
-# Streamlit UI
-st.title("Welcome to Bulk Metallic Glass Design Calculator")
+st.markdown('<div class="title">Welcome to Bulk Metallic Glass Design Calculator</div>', unsafe_allow_html=True)
 
-# Step 1: Number of Elements
 num_elements = st.number_input("Number of elements", min_value=1, max_value=10, step=1, value=2)
 
-# Step 2: Element Selection Method
 selection_method = st.radio("Choose element selection method:", ("Periodic Table", "Dropdown"))
 
-# Step 3: Periodic Table Popup
 if selection_method == "Periodic Table":
-    st.subheader("Select Elements")
+    st.markdown('<div class="subtitle">Select Elements</div>', unsafe_allow_html=True)
     generate_periodic_table()
     selected_elements = st.session_state.selected_elements
 else:
-    st.subheader("Select Elements from Dropdown")
+    st.markdown('<div class="subtitle">Select Elements from Dropdown</div>', unsafe_allow_html=True)
     all_elements = [el.symbol for el in periodictable.elements if el.symbol]
     selected_elements = st.multiselect("Choose elements:", all_elements, default=all_elements[:num_elements])
     st.session_state.selected_elements = selected_elements
 
-# Step 4: Element Fraction Input
 if len(selected_elements) == num_elements:
-    st.subheader("Enter Element Fraction (%)")
+    st.markdown('<div class="subtitle">Enter Element Fraction (%)</div>', unsafe_allow_html=True)
     default_fraction = 100.0 / num_elements
     element_fractions = {}
     for elem in selected_elements:
-        element_fractions[elem] = st.number_input(
-            f"{elem} fraction (%)", min_value=0.0, max_value=100.0, step=0.1, value=default_fraction
-        )
+        element_fractions[elem] = st.number_input(f"{elem} fraction (%)", min_value=0.0, max_value=100.0, step=0.1, value=default_fraction)
 
-    # Ensure the total fraction is 100%
     total_fraction = sum(element_fractions.values())
     if total_fraction != 100:
-        st.warning("Total fraction must be 100%")
+        st.markdown('<div class="warning">Total fraction must be 100%</div>', unsafe_allow_html=True)
 
-    # Output Section: Predictions
-    st.subheader("Prediction Panel")
+    st.markdown('<div class="subtitle">Prediction Panel</div>', unsafe_allow_html=True)
     st.write("Predicted Phase: CMG")
     st.write("Glass Transition Temperature (T_g) [K]: 632")
     st.write("Crystallization Temperature (T_c) [K]: 650")
@@ -126,5 +126,4 @@ if len(selected_elements) == num_elements:
     st.write("Critical Diameter of Alloy (d_c) [mm]: 15")
     st.write("Critical Cooling Rate (R_c) [K/s]: 586")
 
-# Display selected elements
 st.write("Selected Elements:", st.session_state.selected_elements)
