@@ -1,5 +1,4 @@
 import streamlit as st
-import pandas as pd
 import periodictable
 
 # Initialize session state for selected elements
@@ -215,25 +214,13 @@ st.markdown(
 
 # Dynamically generate fraction inputs for selected elements
 for elem in st.session_state.selected_elements:
-    default_fraction = 100.0 / len(st.session_state.selected_elements)
     fraction = st.number_input(
         f"{elem} fraction (%)", 
         min_value=0.0, 
         max_value=100.0, 
         step=0.1, 
-        value=default_fraction,
+        value=100.0 / len(st.session_state.selected_elements),
         key=f"fraction_{elem}"
-    )
-    st.markdown(
-        f"""
-        <div class="fraction-box">
-            <div class="fraction-input">
-                <strong>{elem} fraction (%):</strong>
-                <input type="number" value="{fraction}" disabled>
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True
     )
 
 # Ensure the total fraction is 100%
@@ -241,10 +228,49 @@ total_fraction = sum(st.session_state[f"fraction_{elem}"] for elem in st.session
 if total_fraction != 100:
     st.markdown('<div class="warning">Total fraction must be 100%</div>', unsafe_allow_html=True)
 
-# Output Section: Predictions
-st.markdown('<div class="subtitle">Prediction Panel</div>', unsafe_allow_html=True)
+  # Output Section: Predictions
+    st.markdown('<div class="subtitle">Prediction Panel</div>', unsafe_allow_html=True)
 st.markdown(
     """
+    <style>
+    .prediction-box {
+        background-color: #f9f9f9;
+        padding: 20px;
+        border-radius: 10px;
+        font-size: 18px;
+        font-weight: bold;
+        text-align: left;
+        color: #333;
+        box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+        margin-top: 20px;
+    }
+    .prediction-box h3 {
+        font-size: 24px;
+        font-weight: bold;
+        color: #4CAF50;
+        margin-bottom: 15px;
+    }
+    .prediction-box .property {
+        display: flex;
+        align-items: center;
+        margin: 10px 0;
+    }
+    .prediction-box .property strong {
+        min-width: 300px; /* Fixed width for property names */
+        font-weight: bold;
+        color: #333;
+    }
+    .prediction-box .value-box {
+        background-color: #e0f7fa;
+        padding: 8px 12px;
+        border-radius: 5px;
+        border: 1px solid #4CAF50;
+        font-weight: bold;
+        color: #00796b;
+        min-width: 100px; /* Fixed width for value boxes */
+        text-align: center; /* Center-align text inside value boxes */
+    }
+    </style>
     <div class="prediction-box">
         <h3>Predicted Properties</h3>
         <div class="property">
@@ -252,12 +278,24 @@ st.markdown(
             <div class="value-box">CMG</div>
         </div>
         <div class="property">
-            <strong>Glass Transition Temperature (T<sub>g</sub>):</strong>
-            <div class="value-box">200°C</div>
+            <strong>Glass Transition Temperature (T<sub>g</sub>) [K]:</strong>
+            <div class="value-box">632</div>
         </div>
         <div class="property">
-            <strong>Elastic Modulus:</strong>
-            <div class="value-box">120 GPa</div>
+            <strong>Crystallization Temperature (T<sub>c</sub>) [K]:</strong>
+            <div class="value-box">650</div>
+        </div>
+        <div class="property">
+            <strong>Liquidus Temperature (T<sub>l</sub>) [K]:</strong>
+            <div class="value-box">756</div>
+        </div>
+        <div class="property">
+            <strong>Critical Diameter of Alloy (d<sub>c</sub>) [mm]:</strong>
+            <div class="value-box">15</div>
+        </div>
+        <div class="property">
+            <strong>Critical Cooling Rate (R<sub>c</sub>) [K/s]:</strong>
+            <div class="value-box">586</div>
         </div>
     </div>
     """,
