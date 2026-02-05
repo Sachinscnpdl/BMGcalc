@@ -9,7 +9,7 @@ import plotly.graph_objects as go
 import periodictable
 import base64
 
-# Set page configuration - NO SPACE ABOVE
+# Set page configuration
 st.set_page_config(
     page_title="BMGcalc",
     page_icon="⚗️",
@@ -17,7 +17,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Remove all default padding and margins
+# Clean, high-contrast CSS
 st.markdown("""
 <style>
     /* Remove all default padding and margins */
@@ -37,7 +37,7 @@ st.markdown("""
     .main > div {padding: 0 !important;}
     
     /* Custom fonts */
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
     
     * {
         font-family: 'Inter', sans-serif;
@@ -49,44 +49,46 @@ st.markdown("""
     .main-header {
         background: linear-gradient(90deg, #00B4DB 0%, #0083B0 100%);
         color: white;
-        padding: 1.5rem 2rem;
-        font-size: 2rem;
+        padding: 1.2rem 2rem;
+        font-size: 1.8rem;
         font-weight: 700;
         text-align: center;
+        font-family: 'Space Grotesk', sans-serif;
     }
     
     /* Main container */
     .main-container {
-        padding: 2rem;
+        padding: 1.5rem;
         max-width: 1600px;
         margin: 0 auto;
     }
     
-    /* Section title */
+    /* Section title - HIGH CONTRAST */
     .section-title {
-        color: #00B4DB;
-        font-size: 1.5rem;
-        font-weight: 600;
-        margin: 1.5rem 0 1rem 0;
-        padding-bottom: 0.5rem;
-        border-bottom: 2px solid rgba(0, 180, 219, 0.3);
+        color: #FFFFFF;
+        font-size: 1.4rem;
+        font-weight: 700;
+        margin: 1.2rem 0 0.8rem 0;
+        padding-bottom: 0.4rem;
+        border-bottom: 2px solid #00B4DB;
+        font-family: 'Space Grotesk', sans-serif;
     }
     
     /* Card styling */
     .glass-card {
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 12px;
-        padding: 1.5rem;
-        margin: 1rem 0;
+        background: rgba(15, 23, 42, 0.9);
+        border: 1px solid rgba(0, 180, 219, 0.3);
+        border-radius: 10px;
+        padding: 1.2rem;
+        margin: 0.8rem 0;
     }
     
-    /* Element grid */
+    /* Element grid - COMPACT */
     .element-grid {
         display: grid;
         grid-template-columns: repeat(18, 1fr);
-        gap: 4px;
-        margin: 1rem 0;
+        gap: 2px;
+        margin: 0.5rem 0;
     }
     
     .element-box {
@@ -94,69 +96,81 @@ st.markdown("""
         display: flex;
         align-items: center;
         justify-content: center;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 6px;
-        background: rgba(30, 41, 59, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 4px;
+        background: rgba(30, 41, 59, 0.9);
         cursor: pointer;
         transition: all 0.2s ease;
-        font-weight: 600;
-        font-size: 0.9rem;
-        color: #E2E8F0;
+        font-weight: 700;
+        font-size: 0.8rem;
+        color: #FFFFFF; /* HIGH CONTRAST */
+        padding: 0 !important;
+        min-height: 28px;
+        height: 28px;
     }
     
     .element-box:hover {
-        background: rgba(0, 180, 219, 0.2);
+        background: rgba(0, 180, 219, 0.3);
         border-color: #00B4DB;
+        transform: scale(1.05);
     }
     
     .element-box.selected {
         background: linear-gradient(135deg, #00B4DB 0%, #0083B0 100%);
-        color: white;
+        color: #FFFFFF;
         border-color: #00B4DB;
+        box-shadow: 0 0 8px rgba(0, 180, 219, 0.5);
     }
     
-    /* Property display */
+    /* Property display - HIGH CONTRAST */
     .property-row {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 0.75rem;
-        margin: 0.25rem 0;
-        background: rgba(30, 41, 59, 0.5);
-        border-radius: 8px;
+        padding: 0.6rem;
+        margin: 0.2rem 0;
+        background: rgba(30, 41, 59, 0.8);
+        border-radius: 6px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
     }
     
     .property-label {
-        color: #94A3B8;
+        color: #E2E8F0;
         font-size: 0.9rem;
+        font-weight: 500;
     }
     
     .property-value {
         color: #00B4DB;
         font-size: 1.1rem;
-        font-weight: 600;
+        font-weight: 700;
+        font-family: 'Space Grotesk', sans-serif;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
     }
     
-    /* Metric card */
+    /* Metric card - HIGH CONTRAST */
     .metric-card {
-        background: rgba(30, 41, 59, 0.7);
-        border-radius: 10px;
-        padding: 1rem;
+        background: rgba(15, 23, 42, 0.9);
+        border-radius: 8px;
+        padding: 0.8rem;
         text-align: center;
-        border: 1px solid rgba(0, 180, 219, 0.3);
+        border: 1px solid rgba(0, 180, 219, 0.4);
     }
     
     .metric-value {
-        font-size: 1.8rem;
+        font-size: 1.6rem;
         font-weight: 700;
         color: #00B4DB;
-        margin: 0.5rem 0;
+        margin: 0.3rem 0;
+        font-family: 'Space Grotesk', sans-serif;
     }
     
     .metric-label {
-        color: #94A3B8;
-        font-size: 0.8rem;
+        color: #CBD5E1;
+        font-size: 0.75rem;
+        font-weight: 600;
         text-transform: uppercase;
+        letter-spacing: 0.5px;
     }
     
     /* Button styling */
@@ -164,22 +178,88 @@ st.markdown("""
         background: linear-gradient(90deg, #00B4DB 0%, #0083B0 100%);
         color: white;
         border: none;
-        padding: 0.75rem 1.5rem;
-        border-radius: 8px;
+        padding: 0.6rem 1.2rem;
+        border-radius: 6px;
         font-weight: 600;
         width: 100%;
+        font-size: 0.9rem;
+    }
+    
+    .stButton > button:hover {
+        background: linear-gradient(90deg, #0093B3 0%, #007296 100%);
+        transform: translateY(-1px);
+    }
+    
+    /* Show table button */
+    .show-table-btn {
+        background: rgba(30, 41, 59, 0.9) !important;
+        border: 1px solid #00B4DB !important;
+        color: #00B4DB !important;
+        margin-bottom: 1rem;
+    }
+    
+    /* Gauge container */
+    .gauge-container {
+        background: rgba(15, 23, 42, 0.9);
+        border-radius: 12px;
+        padding: 1.2rem;
+        border: 1px solid rgba(0, 180, 219, 0.4);
+    }
+    
+    /* Composition display */
+    .composition-display {
+        background: rgba(30, 41, 59, 0.9);
+        border-radius: 8px;
+        padding: 0.8rem;
+        margin: 0.5rem 0;
+        border: 1px solid rgba(0, 180, 219, 0.2);
+    }
+    
+    .element-tag {
+        background: rgba(0, 180, 219, 0.15);
+        color: #00B4DB;
+        padding: 0.3rem 0.8rem;
+        border-radius: 4px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        border: 1px solid rgba(0, 180, 219, 0.3);
     }
     
     /* Remove Streamlit default elements */
     .st-emotion-cache-10trblm {padding: 0 !important;}
     .st-emotion-cache-1dp5vir {display: none !important;}
     
-    /* Gauge container */
-    .gauge-container {
-        background: rgba(30, 41, 59, 0.7);
-        border-radius: 15px;
-        padding: 1.5rem;
+    /* Progress bar */
+    .stProgress > div > div {
+        background: linear-gradient(90deg, #00B4DB, #0083B0);
+    }
+    
+    /* Warning text */
+    .warning-text {
+        color: #F87171 !important;
+        font-weight: 600 !important;
+    }
+    
+    /* Success text */
+    .success-text {
+        color: #4ADE80 !important;
+        font-weight: 600 !important;
+    }
+    
+    /* Slider labels - HIGH CONTRAST */
+    .stSlider label {
+        color: #FFFFFF !important;
+        font-weight: 600 !important;
+        font-size: 0.9rem !important;
+    }
+    
+    /* Selected elements display */
+    .selected-elements-box {
+        background: rgba(0, 180, 219, 0.1);
         border: 1px solid rgba(0, 180, 219, 0.3);
+        border-radius: 8px;
+        padding: 0.8rem;
+        margin: 0.8rem 0;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -193,6 +273,8 @@ if 'element_fractions' not in st.session_state:
     st.session_state.element_fractions = {}
 if 'normalize_mode' not in st.session_state:
     st.session_state.normalize_mode = True
+if 'show_periodic_table' not in st.session_state:
+    st.session_state.show_periodic_table = True
 
 # Accurate periodic table layout
 PERIODIC_TABLE = {
@@ -208,52 +290,66 @@ PERIODIC_TABLE = {
 }
 
 def create_simple_gauge(dmax_value):
-    """Create a simple gauge chart that won't cause errors"""
+    """Create a clean gauge chart for glass forming ability"""
     fig = go.Figure(go.Indicator(
         mode="gauge+number",
         value=dmax_value,
         domain={'x': [0, 1], 'y': [0, 1]},
-        title={'text': "Glass Forming Ability", 'font': {'size': 24, 'color': '#00B4DB'}},
+        title={
+            'text': "GLASS FORMING ABILITY",
+            'font': {'size': 20, 'color': '#00B4DB', 'family': 'Space Grotesk'}
+        },
+        number={
+            'font': {'size': 36, 'color': '#FFFFFF', 'family': 'Space Grotesk'},
+            'suffix': " mm"
+        },
         gauge={
-            'axis': {'range': [0, 10], 'tickwidth': 1, 'tickcolor': "white"},
-            'bar': {'color': "#00B4DB"},
+            'axis': {
+                'range': [0, 10],
+                'tickwidth': 1,
+                'tickcolor': '#CBD5E1',
+                'tickfont': {'color': '#CBD5E1', 'size': 10}
+            },
+            'bar': {'color': "#00B4DB", 'thickness': 0.25},
             'bgcolor': "rgba(0,0,0,0)",
             'borderwidth': 2,
-            'bordercolor': "gray",
+            'bordercolor': "#00B4DB",
             'steps': [
-                {'range': [0, 1], 'color': 'rgba(239, 68, 68, 0.6)'},
-                {'range': [1, 3], 'color': 'rgba(245, 158, 11, 0.6)'},
-                {'range': [3, 5], 'color': 'rgba(34, 197, 94, 0.6)'},
-                {'range': [5, 10], 'color': 'rgba(59, 130, 246, 0.6)'}],
+                {'range': [0, 1], 'color': 'rgba(239, 68, 68, 0.7)'},
+                {'range': [1, 3], 'color': 'rgba(245, 158, 11, 0.7)'},
+                {'range': [3, 5], 'color': 'rgba(34, 197, 94, 0.7)'},
+                {'range': [5, 10], 'color': 'rgba(59, 130, 246, 0.7)'}],
         }
     ))
     
     fig.update_layout(
-        height=400,
-        margin=dict(l=20, r=20, t=80, b=20),
+        height=350,
+        margin=dict(l=20, r=20, t=60, b=20),
         paper_bgcolor='rgba(0,0,0,0)',
-        font={'color': "white", 'family': "Inter"}
+        plot_bgcolor='rgba(0,0,0,0)',
+        font={'color': "#CBD5E1", 'family': "Inter"}
     )
     
     return fig
 
 def create_composition_pie(elements, fractions):
     """Create composition pie chart"""
-    colors = ['#00B4DB', '#0083B0', '#006994', '#005073', '#003752']
+    colors = ['#00B4DB', '#0083B0', '#006994', '#005073', '#003752', '#001F3F']
     
     fig = go.Figure(data=[go.Pie(
         labels=[f"{elem}" for elem in elements],
         values=fractions,
-        hole=.5,
+        hole=.4,
         marker_colors=colors[:len(elements)],
         textinfo='label+percent',
-        textfont=dict(size=14, color='white'),
+        textfont=dict(size=12, color='white', family='Inter'),
         hovertemplate="<b>%{label}</b><br>%{percent}<extra></extra>",
+        marker=dict(line=dict(color='rgba(255,255,255,0.3)', width=1))
     )])
     
     fig.update_layout(
         showlegend=False,
-        height=250,
+        height=220,
         margin=dict(t=0, b=0, l=0, r=0),
         paper_bgcolor='rgba(0,0,0,0)',
         plot_bgcolor='rgba(0,0,0,0)',
@@ -288,7 +384,15 @@ def get_download_link(df, filename="bmg_predictions.csv"):
     """Generate download link"""
     csv = df.to_csv(index=False)
     b64 = base64.b64encode(csv.encode()).decode()
-    href = f'<a href="data:file/csv;base64,{b64}" download="{filename}" style="background: #10B981; color: white; padding: 0.75rem 1.5rem; border-radius: 8px; text-decoration: none; font-weight: 600; display: inline-block; text-align: center; width: 100%;">📥 Download Results</a>'
+    href = f'''
+    <a href="data:file/csv;base64,{b64}" download="{filename}" 
+       style="background: linear-gradient(90deg, #10B981 0%, #059669 100%); 
+              color: white; padding: 0.6rem 1.2rem; border-radius: 6px; 
+              text-decoration: none; font-weight: 600; display: block; 
+              text-align: center; font-size: 0.9rem;">
+        📥 Download Results
+    </a>
+    '''
     return href
 
 # MAIN APP
@@ -301,7 +405,7 @@ with st.container():
     col1, col2 = st.columns([1, 1], gap="large")
     
     with col1:
-        st.markdown('<div class="section-title">Select Elements</div>', unsafe_allow_html=True)
+        st.markdown('<div class="section-title">Element Selection</div>', unsafe_allow_html=True)
         
         # Number of elements
         num_elements = st.select_slider(
@@ -311,38 +415,60 @@ with st.container():
             key="num_elements"
         )
         
-        # Periodic Table
-        st.markdown('<div class="glass-card">', unsafe_allow_html=True)
+        # Show/Hide periodic table button
+        if not st.session_state.show_periodic_table:
+            if st.button("📋 Show Periodic Table", key="show_table", type="secondary"):
+                st.session_state.show_periodic_table = True
+                st.rerun()
         
-        # Generate periodic table buttons
-        for row_idx, row in PERIODIC_TABLE.items():
-            cols = st.columns(len(row))
-            for col_idx, element in enumerate(row):
-                if element:
-                    with cols[col_idx]:
-                        is_selected = element in st.session_state.selected_elements
-                        if st.button(
-                            element,
-                            key=f"btn_{element}_{row_idx}_{col_idx}",
-                            type="primary" if is_selected else "secondary",
-                            use_container_width=True
-                        ):
-                            if element in st.session_state.selected_elements:
-                                st.session_state.selected_elements.remove(element)
-                            else:
-                                if len(st.session_state.selected_elements) < num_elements:
-                                    st.session_state.selected_elements.append(element)
-                                    # Initialize fraction
-                                    if element not in st.session_state.element_fractions:
-                                        st.session_state.element_fractions[element] = 100 / (len(st.session_state.selected_elements))
+        # Periodic Table (hidden after prediction if show_periodic_table is False)
+        if st.session_state.show_periodic_table:
+            st.markdown('<div class="glass-card">', unsafe_allow_html=True)
+            
+            # Generate periodic table buttons - COMPACT VERSION
+            for row_idx, row in PERIODIC_TABLE.items():
+                cols = st.columns(len(row))
+                for col_idx, element in enumerate(row):
+                    if element:
+                        with cols[col_idx]:
+                            is_selected = element in st.session_state.selected_elements
+                            btn_label = element
+                            
+                            # Use button with minimal padding
+                            if st.button(
+                                btn_label,
+                                key=f"btn_{element}_{row_idx}_{col_idx}",
+                                type="primary" if is_selected else "secondary",
+                                use_container_width=True
+                            ):
+                                if element in st.session_state.selected_elements:
+                                    st.session_state.selected_elements.remove(element)
                                 else:
-                                    st.warning(f"Maximum {num_elements} elements allowed")
-                            st.rerun()
-                else:
-                    with cols[col_idx]:
-                        st.write("")
+                                    if len(st.session_state.selected_elements) < num_elements:
+                                        st.session_state.selected_elements.append(element)
+                                        if element not in st.session_state.element_fractions:
+                                            st.session_state.element_fractions[element] = 100 / (len(st.session_state.selected_elements))
+                                    else:
+                                        st.warning(f"Maximum {num_elements} elements allowed")
+                                st.rerun()
+                    else:
+                        with cols[col_idx]:
+                            st.write("")
+            
+            st.markdown('</div>', unsafe_allow_html=True)
         
-        st.markdown('</div>', unsafe_allow_html=True)
+        # Selected Elements Display
+        if st.session_state.selected_elements:
+            st.markdown('<div class="selected-elements-box">', unsafe_allow_html=True)
+            st.markdown(f'''
+            <div style="color: #00B4DB; font-weight: 600; margin-bottom: 0.5rem; font-size: 0.9rem;">
+                Selected Elements ({len(st.session_state.selected_elements)}/{num_elements})
+            </div>
+            <div style="display: flex; flex-wrap: wrap; gap: 0.3rem;">
+                {''.join([f'<span class="element-tag">{elem}</span>' for elem in st.session_state.selected_elements])}
+            </div>
+            ''', unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)
         
         # Composition Input
         if st.session_state.selected_elements:
@@ -364,15 +490,19 @@ with st.container():
                 # Get current value
                 current_val = st.session_state.element_fractions.get(elem, 100/len(st.session_state.selected_elements))
                 
-                # Create slider
-                new_val = st.slider(
-                    elem,
-                    min_value=0.0,
-                    max_value=100.0,
-                    value=float(current_val),
-                    step=0.5,
-                    key=f"slider_{elem}"
-                )
+                # Create slider with high contrast label
+                col_left, col_right = st.columns([3, 1])
+                with col_left:
+                    new_val = st.slider(
+                        elem,
+                        min_value=0.0,
+                        max_value=100.0,
+                        value=float(current_val),
+                        step=0.5,
+                        key=f"slider_{elem}"
+                    )
+                with col_right:
+                    st.markdown(f'<div style="color: #00B4DB; font-weight: 700; padding-top: 0.5rem;">{new_val:.1f}%</div>', unsafe_allow_html=True)
                 
                 fractions.append(new_val)
                 total += new_val
@@ -386,28 +516,34 @@ with st.container():
                 for elem, frac in zip(st.session_state.selected_elements, fractions):
                     st.session_state.element_fractions[elem] = frac
             
-            # Display total
+            # Display total with color coding
             st.progress(total/100, text=f"Total: {total:.1f}%")
             
             if abs(total - 100) > 0.1:
-                st.warning(f"Total should be 100% (Current: {total:.1f}%)")
+                st.markdown(f'<div class="warning-text">⚠️ Total should be 100% (Current: {total:.1f}%)</div>', unsafe_allow_html=True)
+            else:
+                st.markdown('<div class="success-text">✓ Composition is valid</div>', unsafe_allow_html=True)
             
             # Composition Pie Chart
             if len(st.session_state.selected_elements) > 1:
+                st.markdown('<div style="margin-top: 1rem;">', unsafe_allow_html=True)
                 fig_pie = create_composition_pie(
                     st.session_state.selected_elements,
                     [st.session_state.element_fractions.get(elem, 0) for elem in st.session_state.selected_elements]
                 )
-                st.plotly_chart(fig_pie, use_container_width=True)
+                st.plotly_chart(fig_pie, use_container_width=True, config={'displayModeBar': False})
+                st.markdown('</div>', unsafe_allow_html=True)
             
             st.markdown('</div>', unsafe_allow_html=True)
             
-            # Predict Button
-            if st.button("🚀 Predict Properties", use_container_width=True):
+            # Predict Button - hides periodic table when clicked
+            if st.button("🚀 Predict Properties", use_container_width=True, type="primary"):
                 composition = "".join([f"{elem}{int(st.session_state.element_fractions[elem])}" 
                                      for elem in st.session_state.selected_elements])
                 with st.spinner("Analyzing alloy composition..."):
                     st.session_state.predictions = process_alloys_demo(composition)
+                    st.session_state.show_periodic_table = False  # Hide periodic table after prediction
+                    st.rerun()
     
     with col2:
         # Results Display
@@ -417,36 +553,36 @@ with st.container():
             
             pred = st.session_state.predictions
             
-            # Key Metrics
+            # Key Metrics - HIGH CONTRAST
             cols = st.columns(3)
             with cols[0]:
                 st.markdown("""
                 <div class="metric-card">
-                    <div class="metric-label">GFA Score</div>
+                    <div class="metric-label">GFA SCORE</div>
                     <div class="metric-value">{:.2f}</div>
-                    <div style="color: #94A3B8; font-size: 0.8rem;">Dmax (mm)</div>
+                    <div style="color: #CBD5E1; font-size: 0.7rem;">Dmax (mm)</div>
                 </div>
                 """.format(pred['Predicted_Dmax']), unsafe_allow_html=True)
             
             with cols[1]:
                 st.markdown("""
                 <div class="metric-card">
-                    <div class="metric-label">ΔT Range</div>
+                    <div class="metric-label">ΔT RANGE</div>
                     <div class="metric-value">{:.0f}</div>
-                    <div style="color: #94A3B8; font-size: 0.8rem;">K</div>
+                    <div style="color: #CBD5E1; font-size: 0.7rem;">Tx - Tg (K)</div>
                 </div>
                 """.format(pred['Predicted_Tx'] - pred['Predicted_Tg']), unsafe_allow_html=True)
             
             with cols[2]:
                 st.markdown("""
                 <div class="metric-card">
-                    <div class="metric-label">Phase</div>
+                    <div class="metric-label">PHASE</div>
                     <div class="metric-value">{}</div>
-                    <div style="color: #94A3B8; font-size: 0.8rem;">Confidence: {:.1%}</div>
+                    <div style="color: #CBD5E1; font-size: 0.7rem;">Confidence: {:.1%}</div>
                 </div>
                 """.format(pred['Predicted_Phase'], pred['Phase_Confidence']), unsafe_allow_html=True)
             
-            # Property Details
+            # Property Details - HIGH CONTRAST
             properties = [
                 ("Glass Transition (Tg)", f"{pred['Predicted_Tg']:.1f} K"),
                 ("Crystallization (Tx)", f"{pred['Predicted_Tx']:.1f} K"),
@@ -456,12 +592,12 @@ with st.container():
             ]
             
             for name, value in properties:
-                st.markdown(f"""
+                st.markdown(f'''
                 <div class="property-row">
                     <div class="property-label">{name}</div>
                     <div class="property-value">{value}</div>
                 </div>
-                """, unsafe_allow_html=True)
+                ''', unsafe_allow_html=True)
             
             st.markdown('</div>', unsafe_allow_html=True)
             
@@ -469,7 +605,7 @@ with st.container():
             st.markdown('<div class="section-title">Glass Forming Ability</div>', unsafe_allow_html=True)
             st.markdown('<div class="gauge-container">', unsafe_allow_html=True)
             fig_gauge = create_simple_gauge(pred['Predicted_Dmax'])
-            st.plotly_chart(fig_gauge, use_container_width=True)
+            st.plotly_chart(fig_gauge, use_container_width=True, config={'displayModeBar': False})
             st.markdown('</div>', unsafe_allow_html=True)
             
             # Download Results
@@ -491,12 +627,12 @@ with st.container():
         else:
             st.markdown('<div class="section-title">Prediction Panel</div>', unsafe_allow_html=True)
             st.markdown("""
-            <div class="glass-card" style="text-align: center; padding: 3rem 2rem;">
-                <div style="font-size: 3rem; color: #334155; margin-bottom: 1rem;">⚗️</div>
-                <div style="color: #00B4DB; font-size: 1.3rem; font-weight: 600; margin-bottom: 0.5rem;">
-                    Ready for Analysis
+            <div class="glass-card" style="text-align: center; padding: 2rem 1.5rem;">
+                <div style="font-size: 2.5rem; color: #00B4DB; margin-bottom: 0.8rem;">⚗️</div>
+                <div style="color: #FFFFFF; font-size: 1.2rem; font-weight: 700; margin-bottom: 0.5rem; font-family: 'Space Grotesk', sans-serif;">
+                    READY FOR ANALYSIS
                 </div>
-                <div style="color: #94A3B8;">
+                <div style="color: #CBD5E1; font-size: 0.9rem;">
                     Select elements and set composition to get predictions
                 </div>
             </div>
@@ -506,8 +642,8 @@ with st.container():
 
 # Footer
 st.markdown("""
-<div style="text-align: center; padding: 2rem; margin-top: 3rem; border-top: 1px solid rgba(255, 255, 255, 0.1);">
-    <div style="color: #64748B; font-size: 0.9rem;">
+<div style="text-align: center; padding: 1.5rem; margin-top: 2rem; border-top: 1px solid rgba(255, 255, 255, 0.1);">
+    <div style="color: #94A3B8; font-size: 0.85rem; font-weight: 500;">
         BMGcalc v2.0 • Bulk Metallic Glass Design Platform
     </div>
 </div>
