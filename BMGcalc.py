@@ -1,4 +1,5 @@
 import os
+# Set this before any other imports
 os.environ["PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION"] = "python"
 
 import streamlit as st
@@ -68,12 +69,29 @@ st.markdown("""
         text-align: center;
         background-color: #f8fafc;
     }
+    .alert-info {
+        background-color: #e7f3ff;
+        border-color: #b3d9ff;
+        color: #0066cc;
+        padding: 1rem;
+        border-radius: 0.25rem;
+        margin-bottom: 1rem;
+    }
 </style>
 """, unsafe_allow_html=True)
 
 # App title and description
 st.markdown('<h1 class="main-header">BMGcalc</h1>', unsafe_allow_html=True)
 st.markdown('<p class="sub-header">Bulk Metallic Glass Property Prediction Tool</p>', unsafe_allow_html=True)
+
+# Info alert about demo mode
+st.markdown("""
+<div class="alert-info">
+<strong>🔬 Demo Mode:</strong> This is a demonstration version of BMGcalc with simulated predictions. 
+The actual model integration is available in the full version.
+</div>
+""", unsafe_allow_html=True)
+
 st.markdown("""
 BMGcalc uses advanced machine learning models to predict key properties of metallic glasses, including:
 - Phase classification (Metallic Glass vs. Crystalline)
