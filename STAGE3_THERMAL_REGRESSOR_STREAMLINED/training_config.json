@@ -1,0 +1,16 @@
+{
+    "best_global_mae": 10.624772071838379,
+    "random_seed": 42,
+    "k_folds": 5,
+    "epochs": 600,
+    "batch_size": 64,
+    "max_lr": 0.0015,
+    "weight_decay": 0.002,
+    "patience": 60,
+    "top_features": 100,
+    "physics_alpha": 4.0,
+    "min_margin": 25.0,
+    "device": "cpu",
+    "training_samples": 2215,
+    "total_samples": 2891
+}
