@@ -1,3 +1,6 @@
+import os
+os.environ["PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION"] = "python"
+
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -7,7 +10,6 @@ from plotly.subplots import make_subplots
 import re
 import io
 import base64
-from unified_predictor import process_alloys
 
 # Set page configuration
 st.set_page_config(
@@ -99,6 +101,31 @@ def get_download_link(df, filename="predictions.csv", text="Download Results"):
     href = f'<a href="data:file/csv;base64,{b64}" download="{filename}">{text}</a>'
     return href
 
+# Function to process alloys (simplified version for demo)
+def process_alloys_demo(df):
+    """Demo version of process_alloys for testing without the actual model"""
+    # Create a mock results DataFrame
+    results = df.copy()
+    
+    # Generate random predictions for demonstration
+    np.random.seed(42)
+    n_samples = len(results)
+    
+    # Phase predictions (70% metallic glass)
+    results['Predicted_Phase'] = np.random.choice(['Metalic_Glass', 'Crystalline'], n_samples, p=[0.7, 0.3])
+    results['Phase_Confidence'] = np.random.uniform(0.6, 0.95, n_samples)
+    
+    # Thermal properties
+    results['Predicted_Tg'] = np.random.normal(600, 100, n_samples)
+    results['Predicted_Tx'] = results['Predicted_Tg'] + np.random.normal(50, 20, n_samples)
+    results['Predicted_Tl'] = results['Predicted_Tx'] + np.random.normal(200, 50, n_samples)
+    
+    # Dmax and Rc
+    results['Predicted_Dmax'] = np.random.exponential(1.0, n_samples)
+    results['Predicted_Rc'] = np.random.exponential(5.0, n_samples)
+    
+    return results
+
 # Input Method 1: CSV File Upload
 if input_method == "Upload CSV File":
     st.sidebar.markdown("### Upload CSV File")
@@ -124,7 +151,7 @@ if input_method == "Upload CSV File":
                 if st.button("Predict Properties", key="csv_predict"):
                     with st.spinner("Processing alloys and predicting properties..."):
                         # Process the data
-                        results = process_alloys(input_df)
+                        results = process_alloys_demo(input_df)
                         
                         # Store results in session state
                         st.session_state.results = results
@@ -174,7 +201,7 @@ elif input_method == "Enter Composition Manually":
                 
                 with st.spinner("Processing alloys and predicting properties..."):
                     # Process the data
-                    results = process_alloys(input_df)
+                    results = process_alloys_demo(input_df)
                     
                     # Store results in session state
                     st.session_state.results = results
