@@ -102,11 +102,11 @@ st.markdown("""
         cursor: pointer;
         transition: all 0.2s ease;
         font-weight: 700;
-        font-size: 0.8rem;
-        color: #FFFFFF; /* HIGH CONTRAST */
+        font-size: 0.75rem;
+        color: #FFFFFF;
         padding: 0 !important;
-        min-height: 28px;
-        height: 28px;
+        min-height: 26px;
+        height: 26px;
     }
     
     .element-box:hover {
@@ -190,12 +190,11 @@ st.markdown("""
         transform: translateY(-1px);
     }
     
-    /* Show table button */
-    .show-table-btn {
+    /* Secondary button for show/hide */
+    .secondary-button {
         background: rgba(30, 41, 59, 0.9) !important;
         border: 1px solid #00B4DB !important;
         color: #00B4DB !important;
-        margin-bottom: 1rem;
     }
     
     /* Gauge container */
@@ -261,6 +260,42 @@ st.markdown("""
         padding: 0.8rem;
         margin: 0.8rem 0;
     }
+    
+    /* Composition controls */
+    .composition-controls {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 0.8rem;
+    }
+    
+    /* Fix composition toggle */
+    .fix-composition-toggle {
+        background: rgba(30, 41, 59, 0.7);
+        border: 1px solid rgba(100, 116, 139, 0.5);
+        border-radius: 6px;
+        padding: 0.4rem 0.8rem;
+        color: #CBD5E1;
+        font-size: 0.8rem;
+        cursor: pointer;
+    }
+    
+    .fix-composition-toggle.active {
+        background: rgba(0, 180, 219, 0.2);
+        border-color: #00B4DB;
+        color: #00B4DB;
+    }
+    
+    /* Compact slider container */
+    .compact-slider {
+        margin: 0.3rem 0;
+    }
+    
+    /* Auto-normalize info */
+    .normalize-info {
+        color: #94A3B8;
+        font-size: 0.8rem;
+        margin-top: 0.3rem;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -271,10 +306,12 @@ if 'predictions' not in st.session_state:
     st.session_state.predictions = None
 if 'element_fractions' not in st.session_state:
     st.session_state.element_fractions = {}
-if 'normalize_mode' not in st.session_state:
-    st.session_state.normalize_mode = True
 if 'show_periodic_table' not in st.session_state:
     st.session_state.show_periodic_table = True
+if 'normalize_mode' not in st.session_state:
+    st.session_state.normalize_mode = "auto"  # "auto", "manual", "fixed"
+if 'locked_elements' not in st.session_state:
+    st.session_state.locked_elements = []
 
 # Accurate periodic table layout
 PERIODIC_TABLE = {
@@ -357,14 +394,52 @@ def create_composition_pie(elements, fractions):
     
     return fig
 
-def normalize_fractions():
-    """Normalize fractions to sum to 100%"""
-    if st.session_state.selected_elements and st.session_state.element_fractions:
-        total = sum(st.session_state.element_fractions.get(elem, 0) for elem in st.session_state.selected_elements)
-        if total > 0:
-            for elem in st.session_state.selected_elements:
-                current = st.session_state.element_fractions.get(elem, 0)
-                st.session_state.element_fractions[elem] = (current / total) * 100
+def normalize_composition():
+    """Automatically normalize composition to 100%"""
+    if not st.session_state.selected_elements:
+        return
+    
+    # Calculate current total
+    current_fractions = [st.session_state.element_fractions.get(elem, 0) 
+                        for elem in st.session_state.selected_elements]
+    total = sum(current_fractions)
+    
+    # If total is 0, set equal distribution
+    if total == 0:
+        equal_val = 100 / len(st.session_state.selected_elements)
+        for elem in st.session_state.selected_elements:
+            st.session_state.element_fractions[elem] = equal_val
+        return
+    
+    # Normalize to 100%
+    scale_factor = 100 / total
+    for elem in st.session_state.selected_elements:
+        st.session_state.element_fractions[elem] *= scale_factor
+
+def adjust_composition_for_lock(locked_elements, changed_element, changed_value):
+    """Adjust composition when some elements are locked"""
+    if not locked_elements:
+        normalize_composition()
+        return
+    
+    # Calculate remaining percentage to distribute
+    locked_total = sum(st.session_state.element_fractions.get(elem, 0) 
+                      for elem in locked_elements if elem != changed_element)
+    
+    # Add the changed value if it's locked
+    if changed_element in locked_elements:
+        locked_total += changed_value
+    
+    remaining = 100 - locked_total
+    
+    # Distribute remaining among unlocked elements (excluding the changed one if unlocked)
+    unlocked = [elem for elem in st.session_state.selected_elements 
+                if elem not in locked_elements and elem != changed_element]
+    
+    if unlocked:
+        equal_share = remaining / len(unlocked)
+        for elem in unlocked:
+            st.session_state.element_fractions[elem] = equal_share
 
 def process_alloys_demo(composition_string):
     """Demo prediction function"""
@@ -416,12 +491,16 @@ with st.container():
         )
         
         # Show/Hide periodic table button
-        if not st.session_state.show_periodic_table:
-            if st.button("📋 Show Periodic Table", key="show_table", type="secondary"):
-                st.session_state.show_periodic_table = True
+        show_hide_col1, show_hide_col2 = st.columns([3, 1])
+        with show_hide_col2:
+            button_label = "🔽 Hide Table" if st.session_state.show_periodic_table else "🔼 Show Table"
+            button_type = "secondary" if st.session_state.show_periodic_table else "primary"
+            
+            if st.button(button_label, key="toggle_table", type=button_type):
+                st.session_state.show_periodic_table = not st.session_state.show_periodic_table
                 st.rerun()
         
-        # Periodic Table (hidden after prediction if show_periodic_table is False)
+        # Periodic Table (shown/hidden based on state)
         if st.session_state.show_periodic_table:
             st.markdown('<div class="glass-card">', unsafe_allow_html=True)
             
@@ -432,22 +511,26 @@ with st.container():
                     if element:
                         with cols[col_idx]:
                             is_selected = element in st.session_state.selected_elements
-                            btn_label = element
                             
-                            # Use button with minimal padding
                             if st.button(
-                                btn_label,
+                                element,
                                 key=f"btn_{element}_{row_idx}_{col_idx}",
                                 type="primary" if is_selected else "secondary",
                                 use_container_width=True
                             ):
                                 if element in st.session_state.selected_elements:
                                     st.session_state.selected_elements.remove(element)
+                                    if element in st.session_state.locked_elements:
+                                        st.session_state.locked_elements.remove(element)
                                 else:
                                     if len(st.session_state.selected_elements) < num_elements:
                                         st.session_state.selected_elements.append(element)
                                         if element not in st.session_state.element_fractions:
-                                            st.session_state.element_fractions[element] = 100 / (len(st.session_state.selected_elements))
+                                            # Initialize with equal distribution
+                                            equal_share = 100 / (len(st.session_state.selected_elements))
+                                            for elem in st.session_state.selected_elements:
+                                                st.session_state.element_fractions[elem] = equal_share
+                                        normalize_composition()
                                     else:
                                         st.warning(f"Maximum {num_elements} elements allowed")
                                 st.rerun()
@@ -475,46 +558,106 @@ with st.container():
             st.markdown('<div class="section-title">Set Composition (%)</div>', unsafe_allow_html=True)
             st.markdown('<div class="glass-card">', unsafe_allow_html=True)
             
-            # Auto-normalize toggle
-            st.session_state.normalize_mode = st.toggle(
-                "Auto-normalize to 100%",
-                value=True,
-                help="Automatically adjust fractions to sum to 100%"
-            )
+            # Composition control mode
+            mode_col1, mode_col2, mode_col3 = st.columns(3)
+            with mode_col1:
+                if st.button("🔓 Auto-Adjust", 
+                           key="mode_auto",
+                           help="Automatically adjust all elements to sum 100%",
+                           type="primary" if st.session_state.normalize_mode == "auto" else "secondary"):
+                    st.session_state.normalize_mode = "auto"
+                    normalize_composition()
+                    st.rerun()
             
-            # Calculate total
-            fractions = []
+            with mode_col2:
+                if st.button("🔒 Fixed Values", 
+                           key="mode_manual",
+                           help="Manually set each value independently",
+                           type="primary" if st.session_state.normalize_mode == "manual" else "secondary"):
+                    st.session_state.normalize_mode = "manual"
+                    st.rerun()
+            
+            with mode_col3:
+                if st.button("⚡ Smart Lock", 
+                           key="mode_fixed",
+                           help="Lock specific elements, auto-adjust others",
+                           type="primary" if st.session_state.normalize_mode == "fixed" else "secondary"):
+                    st.session_state.normalize_mode = "fixed"
+                    st.rerun()
+            
+            # Mode description
+            if st.session_state.normalize_mode == "auto":
+                st.markdown('<div class="normalize-info">All values auto-adjusted to sum 100%</div>', unsafe_allow_html=True)
+            elif st.session_state.normalize_mode == "manual":
+                st.markdown('<div class="normalize-info">Set each value independently (Total may not be 100%)</div>', unsafe_allow_html=True)
+            else:
+                st.markdown('<div class="normalize-info">Lock specific elements, others auto-adjusted</div>', unsafe_allow_html=True)
+            
+            # Calculate total and adjust based on mode
             total = 0
+            fractions = []
             
             for elem in st.session_state.selected_elements:
                 # Get current value
                 current_val = st.session_state.element_fractions.get(elem, 100/len(st.session_state.selected_elements))
                 
-                # Create slider with high contrast label
-                col_left, col_right = st.columns([3, 1])
+                # Create columns for slider and lock button
+                col_left, col_mid, col_right = st.columns([3, 1, 1])
+                
                 with col_left:
+                    # Create slider
                     new_val = st.slider(
                         elem,
                         min_value=0.0,
                         max_value=100.0,
                         value=float(current_val),
                         step=0.5,
-                        key=f"slider_{elem}"
+                        key=f"slider_{elem}",
+                        disabled=(st.session_state.normalize_mode == "fixed" and 
+                                 elem in st.session_state.locked_elements)
                     )
-                with col_right:
+                
+                with col_mid:
                     st.markdown(f'<div style="color: #00B4DB; font-weight: 700; padding-top: 0.5rem;">{new_val:.1f}%</div>', unsafe_allow_html=True)
                 
+                with col_right:
+                    if st.session_state.normalize_mode == "fixed":
+                        is_locked = elem in st.session_state.locked_elements
+                        lock_label = "🔓" if is_locked else "🔒"
+                        if st.button(lock_label, key=f"lock_{elem}", 
+                                   help="Lock/unlock this element",
+                                   type="primary" if is_locked else "secondary"):
+                            if elem in st.session_state.locked_elements:
+                                st.session_state.locked_elements.remove(elem)
+                            else:
+                                st.session_state.locked_elements.append(elem)
+                            st.rerun()
+                
+                # Update fraction
+                st.session_state.element_fractions[elem] = new_val
                 fractions.append(new_val)
                 total += new_val
             
-            # Auto-normalize if enabled
-            if st.session_state.normalize_mode and abs(total - 100) > 0.1 and total > 0:
-                scale_factor = 100 / total
-                for i, elem in enumerate(st.session_state.selected_elements):
-                    st.session_state.element_fractions[elem] = fractions[i] * scale_factor
-            else:
-                for elem, frac in zip(st.session_state.selected_elements, fractions):
-                    st.session_state.element_fractions[elem] = frac
+            # Auto-adjust based on mode
+            if st.session_state.normalize_mode == "auto":
+                if abs(total - 100) > 0.1:
+                    scale_factor = 100 / total if total > 0 else 1
+                    for elem in st.session_state.selected_elements:
+                        st.session_state.element_fractions[elem] *= scale_factor
+                    total = 100
+            elif st.session_state.normalize_mode == "fixed" and st.session_state.locked_elements:
+                # Adjust unlocked elements to sum to 100%
+                locked_total = sum(st.session_state.element_fractions.get(elem, 0) 
+                                  for elem in st.session_state.locked_elements)
+                unlocked = [elem for elem in st.session_state.selected_elements 
+                           if elem not in st.session_state.locked_elements]
+                
+                if unlocked:
+                    remaining = 100 - locked_total
+                    equal_share = remaining / len(unlocked) if remaining > 0 else 0
+                    for elem in unlocked:
+                        st.session_state.element_fractions[elem] = equal_share
+                    total = 100
             
             # Display total with color coding
             st.progress(total/100, text=f"Total: {total:.1f}%")
@@ -522,7 +665,7 @@ with st.container():
             if abs(total - 100) > 0.1:
                 st.markdown(f'<div class="warning-text">⚠️ Total should be 100% (Current: {total:.1f}%)</div>', unsafe_allow_html=True)
             else:
-                st.markdown('<div class="success-text">✓ Composition is valid</div>', unsafe_allow_html=True)
+                st.markdown('<div class="success-text">✓ Composition is valid (100%)</div>', unsafe_allow_html=True)
             
             # Composition Pie Chart
             if len(st.session_state.selected_elements) > 1:
@@ -549,6 +692,13 @@ with st.container():
         # Results Display
         if st.session_state.predictions is not None:
             st.markdown('<div class="section-title">Prediction Results</div>', unsafe_allow_html=True)
+            
+            # Show/Hide periodic table button in results panel too
+            if not st.session_state.show_periodic_table:
+                if st.button("📋 Show Periodic Table", key="show_table_results", type="secondary"):
+                    st.session_state.show_periodic_table = True
+                    st.rerun()
+            
             st.markdown('<div class="glass-card">', unsafe_allow_html=True)
             
             pred = st.session_state.predictions
@@ -634,6 +784,20 @@ with st.container():
                 </div>
                 <div style="color: #CBD5E1; font-size: 0.9rem;">
                     Select elements and set composition to get predictions
+                </div>
+                <div style="margin-top: 1.5rem; display: flex; justify-content: center; gap: 0.5rem; font-size: 0.8rem; color: #94A3B8;">
+                    <div style="text-align: center;">
+                        <div style="color: #00B4DB; font-weight: 600;">🔓</div>
+                        <div>Auto-Adjust</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="color: #00B4DB; font-weight: 600;">🔒</div>
+                        <div>Fixed Values</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="color: #00B4DB; font-weight: 600;">⚡</div>
+                        <div>Smart Lock</div>
+                    </div>
                 </div>
             </div>
             """, unsafe_allow_html=True)
