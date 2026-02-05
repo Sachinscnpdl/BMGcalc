@@ -8,8 +8,9 @@ import plotly.express as px
 import plotly.graph_objects as go
 import plotly.colors as pc
 import periodictable
+from streamlit.components.v1 import html
 
-# Set page configuration
+# Set page configuration - NO SPACE ABOVE
 st.set_page_config(
     page_title="BMGcalc",
     page_icon="⚗️",
@@ -17,75 +18,109 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Modern CSS with elegant gradient and animations
+# Remove default Streamlit padding and margins
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@400;500;600;700&display=swap');
+    /* Remove all default padding and margins */
+    .stApp {
+        margin: 0 !important;
+        padding: 0 !important;
+        background: linear-gradient(135deg, #0A192F 0%, #112240 50%, #0A192F 100%);
+        min-height: 100vh;
+    }
+    
+    /* Remove Streamlit header */
+    header {visibility: hidden !important; height: 0 !important;}
+    
+    /* Remove Streamlit footer */
+    footer {visibility: hidden !important; height: 0 !important;}
+    
+    /* Remove extra spacing */
+    .main > div {padding: 0 !important;}
+    
+    /* Remove Streamlit spacing */
+    .block-container {padding: 0 !important; max-width: 100% !important;}
+    
+    /* Custom fonts */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
     
     * {
-        font-family: 'Poppins', sans-serif;
+        font-family: 'Inter', sans-serif;
+        margin: 0;
+        padding: 0;
     }
     
-    .stApp {
-        background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
-        background-attachment: fixed;
-    }
-    
+    /* Modern header */
     .main-header {
+        background: linear-gradient(90deg, #00B4DB 0%, #0083B0 100%);
+        color: white;
+        padding: 1.5rem 0;
         text-align: center;
-        font-family: 'Montserrat', sans-serif;
-        font-size: 3.5rem;
+        margin-bottom: 0 !important;
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 2.5rem;
         font-weight: 700;
-        background: linear-gradient(45deg, #FFD700, #FFA500, #FF6347);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        margin: 1rem 0;
-        padding: 1rem;
-        text-shadow: 0 2px 20px rgba(255, 165, 0, 0.3);
-        animation: shimmer 3s infinite linear;
+        letter-spacing: -0.5px;
+        text-shadow: 0 2px 10px rgba(0, 180, 219, 0.3);
     }
     
-    @keyframes shimmer {
-        0% { background-position: -200% center; }
-        100% { background-position: 200% center; }
-    }
-    
+    /* Main container */
     .main-container {
+        padding: 2rem;
+        max-width: 1600px;
+        margin: 0 auto;
+    }
+    
+    /* Section styling */
+    .section-title {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #00B4DB;
+        margin: 2rem 0 1rem 0;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid rgba(0, 180, 219, 0.3);
+    }
+    
+    /* Card styling */
+    .glass-card {
         background: rgba(255, 255, 255, 0.05);
         backdrop-filter: blur(10px);
-        border-radius: 28px;
-        padding: 40px;
-        margin: 20px auto;
-        max-width: 1600px;
         border: 1px solid rgba(255, 255, 255, 0.1);
-        box-shadow: 0 25px 80px rgba(0, 0, 0, 0.4);
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin: 1rem 0;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
     }
     
-    .section-title {
-        font-family: 'Montserrat', sans-serif;
-        font-size: 1.8rem;
+    /* Modern button */
+    .modern-button {
+        background: linear-gradient(90deg, #00B4DB 0%, #0083B0 100%);
+        color: white;
+        border: none;
+        padding: 1rem 2rem;
+        border-radius: 12px;
+        font-size: 1rem;
         font-weight: 600;
-        color: #FFD700;
-        margin-bottom: 25px;
-        padding-bottom: 12px;
-        border-bottom: 2px solid rgba(255, 215, 0, 0.3);
+        cursor: pointer;
+        transition: all 0.3s ease;
         text-transform: uppercase;
-        letter-spacing: 1px;
+        letter-spacing: 0.5px;
+        width: 100%;
+        margin: 1rem 0;
     }
     
-    .periodic-table-container {
-        background: rgba(10, 10, 40, 0.7);
-        border-radius: 20px;
-        padding: 25px;
-        margin: 20px 0;
-        border: 1px solid rgba(255, 255, 255, 0.1);
+    .modern-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 180, 219, 0.4);
     }
     
-    .periodic-grid {
+    /* Element grid */
+    .element-grid {
         display: grid;
-        grid-template-columns: repeat(18, minmax(40px, 1fr));
-        gap: 6px;
-        margin: 20px 0;
+        grid-template-columns: repeat(18, 1fr);
+        gap: 4px;
+        margin: 1rem 0;
     }
     
     .element-box {
@@ -94,350 +129,168 @@ st.markdown("""
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        border: 2px solid;
-        border-radius: 12px;
-        background: rgba(20, 20, 60, 0.8);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        background: rgba(30, 41, 59, 0.7);
         cursor: pointer;
+        transition: all 0.2s ease;
         font-weight: 600;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        position: relative;
-        overflow: hidden;
-    }
-    
-    .element-box:before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-        transition: 0.5s;
-    }
-    
-    .element-box:hover:before {
-        left: 100%;
+        font-size: 0.9rem;
+        color: #E2E8F0;
     }
     
     .element-box:hover {
-        transform: translateY(-4px) scale(1.05);
-        box-shadow: 0 8px 25px rgba(255, 215, 0, 0.3);
-        z-index: 10;
+        background: rgba(0, 180, 219, 0.2);
+        border-color: #00B4DB;
+        transform: scale(1.05);
     }
     
     .element-box.selected {
-        background: linear-gradient(135deg, #FFD700, #FFA500);
-        color: #0f0c29;
-        border-color: #FFD700;
-        box-shadow: 0 0 25px rgba(255, 215, 0, 0.5);
-        animation: pulse 2s infinite;
+        background: linear-gradient(135deg, #00B4DB 0%, #0083B0 100%);
+        color: white;
+        border-color: #00B4DB;
+        box-shadow: 0 0 15px rgba(0, 180, 219, 0.5);
     }
     
-    @keyframes pulse {
-        0% { box-shadow: 0 0 25px rgba(255, 215, 0, 0.5); }
-        50% { box-shadow: 0 0 40px rgba(255, 215, 0, 0.8); }
-        100% { box-shadow: 0 0 25px rgba(255, 215, 0, 0.5); }
-    }
-    
-    .element-symbol {
-        font-size: 1.4rem;
-        font-weight: 700;
-        line-height: 1;
-    }
-    
-    .element-number {
-        font-size: 0.7rem;
-        opacity: 0.7;
-        margin-top: 2px;
-    }
-    
-    .prediction-card {
-        background: linear-gradient(135deg, rgba(30, 30, 70, 0.9), rgba(20, 20, 50, 0.9));
-        border-radius: 20px;
-        padding: 35px;
-        margin: 25px 0;
-        border: 1px solid rgba(255, 215, 0, 0.2);
-        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
-        position: relative;
-        overflow: hidden;
-    }
-    
-    .prediction-card:before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 4px;
-        background: linear-gradient(90deg, #FFD700, #FF6347, #9D4EDD);
-    }
-    
-    .metric-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 20px;
-        margin: 25px 0;
-    }
-    
-    .metric-tile {
-        background: linear-gradient(135deg, rgba(40, 40, 80, 0.8), rgba(30, 30, 60, 0.8));
-        border-radius: 16px;
-        padding: 25px 20px;
-        text-align: center;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        transition: all 0.3s ease;
-        position: relative;
-        overflow: hidden;
-    }
-    
-    .metric-tile:hover {
-        transform: translateY(-6px);
-        border-color: rgba(255, 215, 0, 0.4);
-        box-shadow: 0 10px 30px rgba(255, 215, 0, 0.2);
-    }
-    
-    .metric-tile:before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 3px;
-        background: linear-gradient(90deg, #FFD700, #FFA500);
-    }
-    
-    .metric-value {
-        font-family: 'Montserrat', sans-serif;
-        font-size: 2.2rem;
-        font-weight: 700;
-        color: #FFD700;
-        margin: 10px 0;
-        line-height: 1;
-    }
-    
-    .metric-label {
-        font-size: 0.9rem;
-        font-weight: 500;
-        color: #A0A0D0;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-    }
-    
-    .property-row {
+    /* Property display */
+    .property-display {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 16px 0;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        transition: background 0.3s ease;
+        padding: 1rem;
+        margin: 0.5rem 0;
+        background: rgba(30, 41, 59, 0.5);
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
     }
     
-    .property-row:hover {
-        background: rgba(255, 255, 255, 0.03);
-    }
-    
-    .property-name {
-        font-size: 1rem;
+    .property-label {
+        color: #94A3B8;
+        font-size: 0.95rem;
         font-weight: 500;
-        color: #E0E0FF;
-        display: flex;
-        align-items: center;
-        gap: 10px;
     }
     
     .property-value {
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: #FFD700;
-        background: rgba(255, 215, 0, 0.1);
-        padding: 10px 20px;
-        border-radius: 10px;
-        border: 1px solid rgba(255, 215, 0, 0.3);
-        min-width: 140px;
-        text-align: center;
-    }
-    
-    .stButton>button {
-        background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
-        color: #0f0c29;
-        font-family: 'Montserrat', sans-serif;
-        font-weight: 600;
-        font-size: 1.1rem;
-        border: none;
-        padding: 18px 40px;
-        border-radius: 14px;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        letter-spacing: 0.5px;
-        text-transform: uppercase;
-        width: 100%;
-        position: relative;
-        overflow: hidden;
-    }
-    
-    .stButton>button:before {
-        content: '';
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        width: 0;
-        height: 0;
-        border-radius: 50%;
-        background: rgba(255, 255, 255, 0.3);
-        transform: translate(-50%, -50%);
-        transition: width 0.6s, height 0.6s;
-    }
-    
-    .stButton>button:hover:before {
-        width: 300px;
-        height: 300px;
-    }
-    
-    .stButton>button:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 12px 40px rgba(255, 165, 0, 0.4);
-    }
-    
-    .fraction-input-container {
-        background: rgba(30, 30, 60, 0.8);
-        border-radius: 16px;
-        padding: 25px;
-        margin: 20px 0;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    
-    .element-fraction {
-        display: flex;
-        align-items: center;
-        gap: 20px;
-        margin: 15px 0;
-        padding: 15px;
-        background: rgba(40, 40, 80, 0.5);
-        border-radius: 12px;
-        transition: all 0.3s ease;
-    }
-    
-    .element-fraction:hover {
-        background: rgba(50, 50, 100, 0.7);
-        border-color: rgba(255, 215, 0, 0.3);
-    }
-    
-    .fraction-slider {
-        flex: 1;
-    }
-    
-    .fraction-value {
+        color: #00B4DB;
         font-size: 1.2rem;
-        font-weight: 600;
-        color: #FFD700;
-        min-width: 60px;
-        text-align: center;
+        font-weight: 700;
+        font-family: 'Space Grotesk', sans-serif;
     }
     
-    .tab-container {
-        background: rgba(20, 20, 50, 0.8);
-        border-radius: 20px;
-        margin-top: 30px;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    
-    /* Remove Streamlit default elements */
-    .stDeployButton {display: none;}
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    
-    /* Custom scrollbar */
-    ::-webkit-scrollbar {
-        width: 10px;
-    }
-    
-    ::-webkit-scrollbar-track {
-        background: rgba(20, 20, 40, 0.5);
-        border-radius: 10px;
-    }
-    
-    ::-webkit-scrollbar-thumb {
-        background: linear-gradient(180deg, #FFD700, #FFA500);
-        border-radius: 10px;
-    }
-    
-    /* Progress bar styling */
-    .stProgress > div > div {
-        background: linear-gradient(90deg, #FFD700, #FFA500);
-    }
-    
-    /* Alert boxes */
-    .alert-box {
-        background: linear-gradient(135deg, rgba(255, 107, 107, 0.1), rgba(255, 107, 107, 0.05));
-        border: 1px solid rgba(255, 107, 107, 0.3);
+    /* Composition slider */
+    .composition-slider {
+        margin: 1rem 0;
+        padding: 1rem;
+        background: rgba(30, 41, 59, 0.5);
         border-radius: 12px;
-        padding: 15px 20px;
-        margin: 15px 0;
-        color: #FF6B6B;
+    }
+    
+    /* Warning message */
+    .warning-message {
+        background: linear-gradient(90deg, rgba(239, 68, 68, 0.1) 0%, rgba(239, 68, 68, 0.05) 100%);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        border-radius: 12px;
+        padding: 1rem;
+        margin: 1rem 0;
+        color: #F87171;
         font-weight: 500;
     }
     
-    .info-box {
-        background: linear-gradient(135deg, rgba(100, 149, 237, 0.1), rgba(100, 149, 237, 0.05));
-        border: 1px solid rgba(100, 149, 237, 0.3);
+    /* Success message */
+    .success-message {
+        background: linear-gradient(90deg, rgba(34, 197, 94, 0.1) 0%, rgba(34, 197, 94, 0.05) 100%);
+        border: 1px solid rgba(34, 197, 94, 0.3);
         border-radius: 12px;
-        padding: 15px 20px;
-        margin: 15px 0;
-        color: #6495ED;
+        padding: 1rem;
+        margin: 1rem 0;
+        color: #4ADE80;
         font-weight: 500;
     }
     
-    /* Tooltip style */
-    .tooltip {
-        position: relative;
-        display: inline-block;
+    /* Metric display */
+    .metric-card {
+        background: linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 41, 59, 0.9) 100%);
+        border-radius: 16px;
+        padding: 1.5rem;
+        border: 1px solid rgba(0, 180, 219, 0.3);
+        text-align: center;
     }
     
-    .tooltip .tooltiptext {
-        visibility: hidden;
-        width: 200px;
-        background-color: #1a1a3a;
-        color: #fff;
-        text-align: center;
-        border-radius: 6px;
-        padding: 10px;
-        position: absolute;
-        z-index: 1;
-        bottom: 125%;
-        left: 50%;
-        margin-left: -100px;
-        opacity: 0;
-        transition: opacity 0.3s;
-        border: 1px solid rgba(255, 215, 0, 0.3);
+    .metric-value {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #00B4DB;
+        font-family: 'Space Grotesk', sans-serif;
+        margin: 0.5rem 0;
+    }
+    
+    .metric-label {
+        color: #94A3B8;
         font-size: 0.9rem;
-        font-weight: 400;
-    }
-    
-    .tooltip:hover .tooltiptext {
-        visibility: visible;
-        opacity: 1;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-weight: 600;
     }
     
     /* Download button */
     .download-btn {
-        background: linear-gradient(135deg, #9D4EDD 0%, #7B2CBF 100%);
+        background: linear-gradient(90deg, #10B981 0%, #059669 100%);
         color: white;
-        padding: 15px 35px;
+        padding: 1rem 2rem;
         border-radius: 12px;
         text-decoration: none;
         font-weight: 600;
         display: inline-block;
-        transition: all 0.3s ease;
+        margin: 1rem 0;
         border: none;
         cursor: pointer;
-        font-family: 'Montserrat', sans-serif;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
+        text-align: center;
+        width: 100%;
     }
     
     .download-btn:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 10px 30px rgba(157, 78, 221, 0.4);
-        color: white;
+        background: linear-gradient(90deg, #059669 0%, #047857 100%);
+    }
+    
+    /* Remove all Streamlit default elements */
+    .st-emotion-cache-10trblm {padding: 0 !important;}
+    .st-emotion-cache-1dp5vir {display: none !important;}
+    .st-emotion-cache-1kyxreq {justify-content: center;}
+    
+    /* Custom tabs */
+    .custom-tab {
+        background: rgba(30, 41, 59, 0.5);
+        padding: 0.5rem 1.5rem;
+        border-radius: 12px 12px 0 0;
+        color: #94A3B8;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-weight: 500;
+    }
+    
+    .custom-tab.active {
+        background: rgba(0, 180, 219, 0.2);
+        color: #00B4DB;
+        border-bottom: 2px solid #00B4DB;
+    }
+    
+    /* Animation */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .fade-in {
+        animation: fadeIn 0.5s ease-out;
+    }
+    
+    /* Gauge container */
+    .gauge-container {
+        background: linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 41, 59, 0.9) 100%);
+        border-radius: 20px;
+        padding: 2rem;
+        border: 1px solid rgba(0, 180, 219, 0.3);
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
     }
 </style>
 """, unsafe_allow_html=True)
@@ -449,10 +302,11 @@ if 'predictions' not in st.session_state:
     st.session_state.predictions = None
 if 'element_fractions' not in st.session_state:
     st.session_state.element_fractions = {}
+if 'normalize_mode' not in st.session_state:
+    st.session_state.normalize_mode = True
 
-# Accurate periodic table layout (18 groups, 7 periods + lanthanides/actinides)
-PERIODIC_TABLE_LAYOUT = {
-    # Row: [elements in order with empty strings for gaps]
+# Accurate periodic table layout
+PERIODIC_TABLE = {
     1: ["H", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "He"],
     2: ["Li", "Be", "", "", "", "", "", "", "", "", "", "B", "C", "N", "O", "F", "Ne"],
     3: ["Na", "Mg", "", "", "", "", "", "", "", "", "", "Al", "Si", "P", "S", "Cl", "Ar"],
@@ -464,212 +318,145 @@ PERIODIC_TABLE_LAYOUT = {
     9: ["", "", "Th", "Pa", "U", "Np", "Pu", "Am", "Cm", "Bk", "Cf", "Es", "Fm", "Md", "No", "Lr", "", ""]
 }
 
-# Element group colors for better visualization
-GROUP_COLORS = {
-    "alkali": "#FF6B6B",
-    "alkaline_earth": "#FFA500",
-    "transition": "#4ECDC4",
-    "post_transition": "#45B7D1",
-    "metalloids": "#96CEB4",
-    "nonmetals": "#FFEAA7",
-    "halogens": "#DDA0DD",
-    "noble_gases": "#98D8C8",
-    "lanthanides": "#F7DC6F",
-    "actinides": "#F1948A"
-}
-
-def get_element_group(element):
-    """Get group for element color coding"""
-    groups = {
-        "alkali": ["Li", "Na", "K", "Rb", "Cs", "Fr"],
-        "alkaline_earth": ["Be", "Mg", "Ca", "Sr", "Ba", "Ra"],
-        "transition": ["Sc", "Ti", "V", "Cr", "Mn", "Fe", "Co", "Ni", "Cu", "Zn",
-                      "Y", "Zr", "Nb", "Mo", "Tc", "Ru", "Rh", "Pd", "Ag", "Cd",
-                      "Hf", "Ta", "W", "Re", "Os", "Ir", "Pt", "Au", "Hg",
-                      "Rf", "Db", "Sg", "Bh", "Hs", "Mt", "Ds", "Rg", "Cn"],
-        "lanthanides": ["La", "Ce", "Pr", "Nd", "Pm", "Sm", "Eu", "Gd", "Tb", "Dy", "Ho", "Er", "Tm", "Yb", "Lu"],
-        "actinides": ["Ac", "Th", "Pa", "U", "Np", "Pu", "Am", "Cm", "Bk", "Cf", "Es", "Fm", "Md", "No", "Lr"],
-        "metalloids": ["B", "Si", "Ge", "As", "Sb", "Te", "Po"],
-        "halogens": ["F", "Cl", "Br", "I", "At"],
-        "noble_gases": ["He", "Ne", "Ar", "Kr", "Xe", "Rn", "Og"],
-        "post_transition": ["Al", "Ga", "In", "Sn", "Tl", "Pb", "Bi", "Nh", "Fl", "Mc", "Lv"],
-        "nonmetals": ["H", "C", "N", "O", "P", "S", "Se"]
-    }
-    
-    for group, elements in groups.items():
-        if element in elements:
-            return group
-    return "other"
-
-def generate_accurate_periodic_table():
-    """Generate accurate periodic table with proper layout"""
-    st.markdown('<div class="periodic-table-container">', unsafe_allow_html=True)
-    
-    for row in range(1, 10):
-        cols = st.columns(18)
-        elements = PERIODIC_TABLE_LAYOUT.get(row, [""]*18)
-        
-        for col_idx, (col, element) in enumerate(zip(cols, elements)):
-            if element:
-                is_selected = element in st.session_state.selected_elements
-                group = get_element_group(element)
-                color = GROUP_COLORS.get(group, "#6666CC")
-                
-                # Create element box with proper styling
-                element_html = f"""
-                <div class="element-box {'selected' if is_selected else ''}" 
-                     style="border-color: {color if not is_selected else '#FFD700'};
-                            background: {'linear-gradient(135deg, #FFD700, #FFA500)' if is_selected else f'rgba({int(color[1:3], 16)}, {int(color[3:5], 16)}, {int(color[5:7], 16)}, 0.2)'}"
-                     onclick="this.dispatchEvent(new Event('click'))">
-                    <div class="element-symbol">{element}</div>
-                    <div class="element-number">{periodictable.elements.symbol(element).number if hasattr(periodictable.elements, 'symbol') else ''}</div>
-                </div>
-                """
-                
-                with col:
-                    if st.button(element, key=f"pt_{row}_{col}_{element}", 
-                               help=f"Click to select {element}",
-                               type="primary" if is_selected else "secondary"):
-                        if element in st.session_state.selected_elements:
-                            st.session_state.selected_elements.remove(element)
-                        else:
-                            if len(st.session_state.selected_elements) < 10:  # Limit to 10 elements
-                                st.session_state.selected_elements.append(element)
-                        st.rerun()
-            else:
-                with col:
-                    st.write("")
-    
-    st.markdown('</div>', unsafe_allow_html=True)
-
-def create_beautiful_thermal_plot(predictions):
-    """Create beautiful thermal properties plot"""
-    fig = go.Figure()
-    
-    # Create gradient bar chart
-    temps = [predictions['Predicted_Tg'], predictions['Predicted_Tx'], predictions['Predicted_Tl']]
-    labels = ['T<sub>g</sub>', 'T<sub>x</sub>', 'T<sub>l</sub>']
-    colors = ['#FFD700', '#FF8C00', '#FF4500']
-    
-    # Add bars with gradient effect
-    for i, (temp, label, color) in enumerate(zip(temps, labels, colors)):
-        fig.add_trace(go.Bar(
-            x=[label],
-            y=[temp],
-            name=label,
-            marker=dict(
-                color=color,
-                line=dict(color='white', width=2)
-            ),
-            hovertemplate=f"<b>{label}</b><br>{temp:.1f} K<extra></extra>",
-            text=[f"{temp:.0f} K"],
-            textposition='outside',
-            textfont=dict(size=14, color='white')
-        ))
-    
-    fig.update_layout(
-        title=dict(
-            text="Thermal Properties",
-            font=dict(size=24, color='#FFD700', family='Montserrat'),
-            x=0.5
-        ),
-        plot_bgcolor='rgba(20, 20, 50, 0.8)',
-        paper_bgcolor='rgba(20, 20, 50, 0.8)',
-        font=dict(color='#E0E0FF', family='Poppins'),
-        height=500,
-        margin=dict(t=60, b=40, l=40, r=40),
-        xaxis=dict(
-            tickfont=dict(size=16, color='#FFD700'),
-            gridcolor='rgba(255, 255, 255, 0.1)'
-        ),
-        yaxis=dict(
-            title=dict(text="Temperature (K)", font=dict(size=18, color='#FFD700')),
-            gridcolor='rgba(255, 255, 255, 0.1)',
-            tickfont=dict(size=14)
-        ),
-        showlegend=False
-    )
-    
-    return fig
-
-def create_beautiful_gauge(predictions):
-    """Create beautiful gauge chart for glass forming ability"""
+def create_glowing_gauge(predictions):
+    """Create beautiful glowing gauge chart for glass forming ability"""
     dmax = predictions['Predicted_Dmax']
     
-    fig = go.Figure(go.Indicator(
-        mode="gauge+number+delta",
+    fig = go.Figure()
+    
+    # Add gauge
+    fig.add_trace(go.Indicator(
+        mode="gauge+number",
         value=dmax,
         domain={'x': [0, 1], 'y': [0, 1]},
         title={
-            'text': "Glass Forming Ability",
-            'font': {'size': 24, 'color': '#FFD700', 'family': 'Montserrat'}
+            'text': "GLASS FORMING ABILITY",
+            'font': {'size': 26, 'color': '#00B4DB', 'family': 'Space Grotesk, sans-serif'}
         },
-        delta={'reference': 3, 'font': {'size': 20, 'color': 'white'}},
         number={
-            'font': {'size': 40, 'color': '#FFD700', 'family': 'Montserrat'},
-            'suffix': " mm"
+            'font': {'size': 48, 'color': '#FFFFFF', 'family': 'Space Grotesk, sans-serif'},
+            'suffix': " mm",
+            'valueformat': '.3f'
         },
         gauge={
             'axis': {
-                'range': [None, 10],
+                'range': [0, 10],
                 'tickwidth': 2,
                 'tickcolor': 'white',
-                'tickfont': {'size': 14, 'color': 'white'}
+                'dtick': 1,
+                'tickfont': {'size': 14, 'color': '#94A3B8'}
             },
-            'bar': {'color': "#FFD700"},
+            'bar': {
+                'color': '#00B4DB',
+                'thickness': 0.3
+            },
             'bgcolor': "rgba(0,0,0,0)",
-            'borderwidth': 3,
-            'bordercolor': "#FFD700",
+            'borderwidth': 0,
+            'bordercolor': "rgba(255,255,255,0.1)",
             'steps': [
-                {'range': [0, 1], 'color': 'rgba(255, 107, 107, 0.6)'},
-                {'range': [1, 3], 'color': 'rgba(255, 193, 7, 0.6)'},
-                {'range': [3, 10], 'color': 'rgba(76, 175, 80, 0.6)'}],
+                {'range': [0, 1], 'color': 'rgba(239, 68, 68, 0.6)', 'name': 'Poor'},
+                {'range': [1, 3], 'color': 'rgba(245, 158, 11, 0.6)', 'name': 'Fair'},
+                {'range': [3, 5], 'color': 'rgba(34, 197, 94, 0.6)', 'name': 'Good'},
+                {'range': [5, 10], 'color': 'rgba(59, 130, 246, 0.6)', 'name': 'Excellent'}
+            ],
             'threshold': {
-                'line': {'color': "white", 'width': 4},
+                'line': {
+                    'color': "#FFFFFF",
+                    'width': 4,
+                    'dash': 'dash'
+                },
                 'thickness': 0.85,
-                'value': dmax}
+                'value': dmax
+            }
         }
     ))
     
+    # Add custom annotations for gauge zones
+    fig.add_annotation(
+        x=0.5, y=0.2,
+        text="POOR",
+        showarrow=False,
+        font=dict(size=14, color="rgba(239, 68, 68, 0.8)", family="Space Grotesk"),
+        xref="paper", yref="paper"
+    )
+    
+    fig.add_annotation(
+        x=0.5, y=0.3,
+        text="FAIR",
+        showarrow=False,
+        font=dict(size=14, color="rgba(245, 158, 11, 0.8)", family="Space Grotesk"),
+        xref="paper", yref="paper"
+    )
+    
+    fig.add_annotation(
+        x=0.5, y=0.4,
+        text="GOOD",
+        showarrow=False,
+        font=dict(size=14, color="rgba(34, 197, 94, 0.8)", family="Space Grotesk"),
+        xref="paper", yref="paper"
+    )
+    
+    fig.add_annotation(
+        x=0.5, y=0.5,
+        text="EXCELLENT",
+        showarrow=False,
+        font=dict(size=14, color="rgba(59, 130, 246, 0.8)", family="Space Grotesk"),
+        xref="paper", yref="paper"
+    )
+    
     fig.update_layout(
         height=500,
-        margin=dict(t=80, b=20, l=20, r=20),
-        paper_bgcolor='rgba(20, 20, 50, 0.8)',
-        font={'color': "white", 'family': "Poppins"}
+        margin=dict(t=100, b=20, l=20, r=20),
+        paper_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='rgba(0,0,0,0)',
+        font={'color': "white", 'family': "Inter, sans-serif"},
+        hovermode=False
     )
     
     return fig
 
-def create_composition_visualization(elements, fractions):
-    """Create pie chart for composition visualization"""
-    colors = ['#FFD700', '#FF8C00', '#FF4500', '#9D4EDD', '#4CC9F0', '#4361EE', '#3A0CA3']
+def create_composition_pie(elements, fractions):
+    """Create beautiful composition pie chart"""
+    colors = ['#00B4DB', '#0083B0', '#006994', '#005073', '#003752']
     
     fig = go.Figure(data=[go.Pie(
-        labels=[f"{elem} ({frac}%)" for elem, frac in zip(elements, fractions)],
+        labels=[f"{elem}<br>{frac}%" for elem, frac in zip(elements, fractions)],
         values=fractions,
-        hole=.4,
+        hole=.5,
         marker_colors=colors[:len(elements)],
-        textinfo='label+percent',
-        textfont=dict(size=14, color='white', family='Poppins'),
-        hovertemplate="<b>%{label}</b><br>Fraction: %{percent}<extra></extra>"
+        textinfo='label',
+        textfont=dict(size=14, color='white', family='Inter'),
+        hovertemplate="<b>%{label}</b><extra></extra>",
+        pull=[0.1 if i == 0 else 0 for i in range(len(elements))]
     )])
     
     fig.update_layout(
-        title=dict(
-            text="Alloy Composition",
-            font=dict(size=22, color='#FFD700', family='Montserrat'),
-            x=0.5
-        ),
         showlegend=False,
-        height=400,
-        margin=dict(t=60, b=20, l=20, r=20),
-        paper_bgcolor='rgba(20, 20, 50, 0.8)'
+        height=300,
+        margin=dict(t=10, b=10, l=10, r=10),
+        paper_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='rgba(0,0,0,0)',
+        annotations=[dict(
+            text='COMPOSITION',
+            x=0.5, y=0.5,
+            font=dict(size=16, color='#94A3B8', family='Space Grotesk'),
+            showarrow=False
+        )]
     )
     
     return fig
 
-# Mock prediction function
+def normalize_fractions():
+    """Normalize fractions to sum to 100%"""
+    if st.session_state.selected_elements and st.session_state.element_fractions:
+        total = sum(st.session_state.element_fractions.get(elem, 0) for elem in st.session_state.selected_elements)
+        if total > 0:
+            for elem in st.session_state.selected_elements:
+                current = st.session_state.element_fractions.get(elem, 0)
+                st.session_state.element_fractions[elem] = (current / total) * 100
+
 def process_alloys_demo(composition_string):
+    """Demo prediction function"""
     results = pd.DataFrame({
         'Alloys': [composition_string],
         'Predicted_Phase': ['Metallic Glass'],
@@ -682,195 +469,296 @@ def process_alloys_demo(composition_string):
     })
     return results.iloc[0]
 
-# Main App
-st.markdown('<h1 class="main-header">⚗️ BMGcalc</h1>', unsafe_allow_html=True)
-st.markdown('<p style="text-align: center; color: #A0A0D0; font-size: 1.2rem; margin-bottom: 2rem;">Bulk Metallic Glass Property Predictor</p>', unsafe_allow_html=True)
+def get_download_link(df, filename="bmg_predictions.csv"):
+    """Generate download link"""
+    csv = df.to_csv(index=False)
+    b64 = base64.b64encode(csv.encode()).decode()
+    href = f"""
+    <a href="data:file/csv;base64,{b64}" download="{filename}" style="text-decoration: none;">
+        <button class="download-btn">
+            📥 Download Results
+        </button>
+    </a>
+    """
+    return href
+
+# MAIN APP - NO SPACE ABOVE
+st.markdown('<div class="main-header">⚗️ BMGcalc - Metallic Glass Predictor</div>', unsafe_allow_html=True)
 
 with st.container():
     st.markdown('<div class="main-container">', unsafe_allow_html=True)
     
-    # Input Section
-    col1, col2 = st.columns([1, 1])
+    # Two column layout
+    col1, col2 = st.columns([1, 1], gap="large")
     
     with col1:
-        st.markdown('<div class="section-title">Element Selection</div>', unsafe_allow_html=True)
+        st.markdown('<div class="section-title">Select Elements</div>', unsafe_allow_html=True)
+        st.markdown('<div class="glass-card">', unsafe_allow_html=True)
         
-        # Number of elements
+        # Number of elements selector
         num_elements = st.select_slider(
-            "Number of Elements",
-            options=[2, 3, 4, 5, 6, 7, 8],
+            "Number of elements",
+            options=[2, 3, 4, 5, 6],
             value=3,
-            help="Select the number of elements in your alloy"
+            key="num_elements"
         )
         
-        # Display periodic table
-        generate_accurate_periodic_table()
-        
-        if st.session_state.selected_elements:
-            if len(st.session_state.selected_elements) > num_elements:
-                st.session_state.selected_elements = st.session_state.selected_elements[:num_elements]
-                st.info(f"Limited to {num_elements} elements")
-    
-    with col2:
-        st.markdown('<div class="section-title">Composition Setup</div>', unsafe_allow_html=True)
-        
-        if st.session_state.selected_elements:
-            st.markdown('<div class="fraction-input-container">', unsafe_allow_html=True)
-            
-            total = 0
-            fractions = []
-            
-            for elem in st.session_state.selected_elements:
-                default_val = 100 / len(st.session_state.selected_elements)
-                fraction = st.slider(
-                    f"{elem}",
-                    min_value=0.0,
-                    max_value=100.0,
-                    value=float(default_val),
-                    step=0.5,
-                    key=f"frac_{elem}",
-                    help=f"Adjust percentage for {elem}"
-                )
-                st.session_state.element_fractions[elem] = fraction
-                total += fraction
-                fractions.append(fraction)
-            
-            st.progress(total/100, text=f"Total Composition: {total:.1f}%")
-            
-            if abs(total - 100) > 0.1:
-                st.markdown(f'<div class="alert-box">⚠️ Total must be 100% (Current: {total:.1f}%)</div>', unsafe_allow_html=True)
-            
-            st.markdown('</div>', unsafe_allow_html=True)
-            
-            # Composition visualization
-            if len(st.session_state.selected_elements) > 1:
-                fig_pie = create_composition_visualization(
-                    st.session_state.selected_elements, 
-                    fractions
-                )
-                st.plotly_chart(fig_pie, use_container_width=True)
-        else:
-            st.markdown('<div class="info-box">ℹ️ Select elements from the periodic table</div>', unsafe_allow_html=True)
-    
-    # Prediction Button
-    if st.button("🚀 Predict Properties", use_container_width=True):
-        if st.session_state.selected_elements and abs(total - 100) < 0.1:
-            composition = "".join([f"{elem}{int(st.session_state.element_fractions[elem])}" 
-                                 for elem in st.session_state.selected_elements])
-            with st.spinner("🔬 Analyzing alloy composition..."):
-                st.session_state.predictions = process_alloys_demo(composition)
-    
-    # Results Section
-    if st.session_state.predictions is not None:
-        st.markdown("---")
-        pred = st.session_state.predictions
-        
-        # Key Metrics
-        st.markdown('<div class="section-title">Prediction Results</div>', unsafe_allow_html=True)
-        
-        # Metrics grid
-        metric_data = [
-            ("Phase", pred['Predicted_Phase'], f"{pred['Phase_Confidence']:.1%}"),
-            ("T<sub>g</sub>", f"{pred['Predicted_Tg']:.0f} K", "Glass Transition"),
-            ("T<sub>x</sub>", f"{pred['Predicted_Tx']:.0f} K", "Crystallization"),
-            ("T<sub>l</sub>", f"{pred['Predicted_Tl']:.0f} K", "Liquidus"),
-            ("ΔT", f"{pred['Predicted_Tx'] - pred['Predicted_Tg']:.0f} K", "Supercooled Region"),
-            ("D<sub>max</sub>", f"{pred['Predicted_Dmax']:.3f} mm", "Critical Diameter"),
-            ("R<sub>c</sub>", f"{pred['Predicted_Rc']:.2f} K/s", "Cooling Rate"),
-        ]
-        
-        cols = st.columns(4)
-        for idx, (label, value, description) in enumerate(metric_data):
-            with cols[idx % 4]:
-                st.markdown(f'''
-                <div class="metric-tile">
-                    <div class="metric-label">{label}</div>
-                    <div class="metric-value">{value}</div>
-                    <div style="font-size: 0.8rem; color: #A0A0D0; margin-top: 5px;">{description}</div>
-                </div>
-                ''', unsafe_allow_html=True)
-        
-        # Detailed Properties
-        st.markdown('<div class="prediction-card">', unsafe_allow_html=True)
-        st.markdown('<div style="font-size: 1.4rem; font-weight: 600; color: #FFD700; margin-bottom: 25px; font-family: Montserrat;">Detailed Properties</div>', unsafe_allow_html=True)
-        
-        properties = [
-            ("Phase Classification", f"{pred['Predicted_Phase']}", f"Confidence: {pred['Phase_Confidence']:.1%}"),
-            ("Glass Transition Temperature (T<sub>g</sub>)", f"{pred['Predicted_Tg']:.1f} K", "Onset of glass transition"),
-            ("Crystallization Temperature (T<sub>x</sub>)", f"{pred['Predicted_Tx']:.1f} K", "Start of crystallization"),
-            ("Liquidus Temperature (T<sub>l</sub>)", f"{pred['Predicted_Tl']:.1f} K", "Complete melting"),
-            ("Supercooled Liquid Region (ΔT)", f"{pred['Predicted_Tx'] - pred['Predicted_Tg']:.1f} K", "Thermal stability window"),
-            ("Critical Diameter (D<sub>max</sub>)", f"{pred['Predicted_Dmax']:.4f} mm", "Maximum glassy dimension"),
-            ("Critical Cooling Rate (R<sub>c</sub>)", f"{pred['Predicted_Rc']:.3f} K/s", "Required cooling speed"),
-        ]
-        
-        for name, value, desc in properties:
-            st.markdown(f'''
-            <div class="property-row">
-                <div class="property-name">
-                    <span>{name}</span>
-                    <small style="font-size: 0.85rem; color: #A0A0D0; margin-left: 10px;">{desc}</small>
-                </div>
-                <div class="property-value">{value}</div>
+        # Periodic Table
+        st.markdown("""
+        <div style="background: rgba(15, 23, 42, 0.7); padding: 1rem; border-radius: 12px; margin: 1rem 0;">
+            <div style="color: #94A3B8; font-size: 0.9rem; margin-bottom: 0.5rem; text-align: center;">
+                Click elements to select (Max: {})
             </div>
-            ''', unsafe_allow_html=True)
+            <div class="element-grid">
+        """.format(num_elements), unsafe_allow_html=True)
+        
+        # Generate periodic table buttons
+        elements_per_row = {}
+        for row_idx, row in PERIODIC_TABLE.items():
+            cols = st.columns(len(row))
+            for col_idx, element in enumerate(row):
+                if element:
+                    with cols[col_idx]:
+                        is_selected = element in st.session_state.selected_elements
+                        if st.button(
+                            element,
+                            key=f"btn_{element}_{row_idx}_{col_idx}",
+                            type="primary" if is_selected else "secondary",
+                            use_container_width=True
+                        ):
+                            if element in st.session_state.selected_elements:
+                                st.session_state.selected_elements.remove(element)
+                            else:
+                                if len(st.session_state.selected_elements) < num_elements:
+                                    st.session_state.selected_elements.append(element)
+                                    # Initialize fraction
+                                    if element not in st.session_state.element_fractions:
+                                        st.session_state.element_fractions[element] = 100 / (len(st.session_state.selected_elements))
+                                else:
+                                    st.warning(f"Maximum {num_elements} elements allowed")
+                            st.rerun()
+                else:
+                    with cols[col_idx]:
+                        st.write("")
+        
+        st.markdown('</div></div>', unsafe_allow_html=True)
+        
+        # Display selected elements
+        if st.session_state.selected_elements:
+            st.markdown(f"""
+            <div style="margin: 1rem 0; padding: 1rem; background: rgba(0, 180, 219, 0.1); border-radius: 12px; border: 1px solid rgba(0, 180, 219, 0.3);">
+                <div style="color: #00B4DB; font-weight: 600; margin-bottom: 0.5rem;">Selected Elements:</div>
+                <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                    {''.join([f'<span style="background: rgba(0, 180, 219, 0.2); padding: 0.5rem 1rem; border-radius: 8px; color: #00B4DB; font-weight: 600;">{elem}</span>' for elem in st.session_state.selected_elements])}
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
         
         st.markdown('</div>', unsafe_allow_html=True)
         
-        # Visualizations
-        tab1, tab2, tab3 = st.tabs(["📊 Thermal Analysis", "🎯 GFA Indicator", "📈 Property Matrix"])
-        
-        with tab1:
-            fig_thermal = create_beautiful_thermal_plot(pred)
-            st.plotly_chart(fig_thermal, use_container_width=True)
-        
-        with tab2:
-            fig_gauge = create_beautiful_gauge(pred)
-            st.plotly_chart(fig_gauge, use_container_width=True)
-        
-        with tab3:
-            # Property matrix visualization
-            properties_matrix = {
-                'Property': ['GFA', 'Thermal Stability', 'Glass Formability', 'Processability'],
-                'Score': [
-                    min(pred['Predicted_Dmax'] * 10, 100),
-                    min((pred['Predicted_Tx'] - pred['Predicted_Tg']) * 0.5, 100),
-                    min((1000 / max(pred['Predicted_Rc'], 1)), 100),
-                    min((800 - pred['Predicted_Tl']) * 0.3, 100)
-                ]
-            }
+        # Composition Input with Auto-adjust
+        if st.session_state.selected_elements:
+            st.markdown('<div class="section-title">Set Composition (%)</div>', unsafe_allow_html=True)
+            st.markdown('<div class="glass-card">', unsafe_allow_html=True)
             
-            fig_matrix = px.bar(
-                properties_matrix,
-                x='Property',
-                y='Score',
-                color='Score',
-                color_continuous_scale='Viridis',
-                range_color=[0, 100]
+            # Normalize mode toggle
+            st.session_state.normalize_mode = st.toggle(
+                "Auto-normalize to 100%",
+                value=True,
+                help="When enabled, adjusting one element automatically adjusts others to sum to 100%"
             )
             
-            fig_matrix.update_layout(
-                title="Property Matrix Score",
-                plot_bgcolor='rgba(20, 20, 50, 0.8)',
-                paper_bgcolor='rgba(20, 20, 50, 0.8)',
-                font=dict(color='#E0E0FF', family='Poppins'),
-                height=400,
-                xaxis=dict(tickfont=dict(color='#FFD700')),
-                yaxis=dict(tickfont=dict(color='#FFD700'))
-            )
+            # Calculate total
+            fractions = []
+            total = 0
             
-            st.plotly_chart(fig_matrix, use_container_width=True)
+            for elem in st.session_state.selected_elements:
+                col_left, col_right = st.columns([3, 1])
+                with col_left:
+                    # Get current value
+                    current_val = st.session_state.element_fractions.get(elem, 100/len(st.session_state.selected_elements))
+                    
+                    # Create slider
+                    new_val = st.slider(
+                        elem,
+                        min_value=0.0,
+                        max_value=100.0,
+                        value=float(current_val),
+                        step=0.5,
+                        key=f"slider_{elem}",
+                        label_visibility="visible"
+                    )
+                
+                with col_right:
+                    # Display current value
+                    st.metric("", f"{new_val:.1f}%", delta=None)
+                
+                fractions.append(new_val)
+                total += new_val
+            
+            # Auto-normalize if enabled
+            if st.session_state.normalize_mode and abs(total - 100) > 0.1:
+                if total > 0:
+                    scale_factor = 100 / total
+                    for i, elem in enumerate(st.session_state.selected_elements):
+                        st.session_state.element_fractions[elem] = fractions[i] * scale_factor
+            
+            # Update fractions in session state
+            for elem, frac in zip(st.session_state.selected_elements, fractions):
+                st.session_state.element_fractions[elem] = frac
+            
+            # Display total
+            col_total1, col_total2 = st.columns([2, 1])
+            with col_total1:
+                st.progress(total/100, text=f"Total: {total:.1f}%")
+            with col_total2:
+                if abs(total - 100) <= 0.1:
+                    st.success("✓ Valid")
+                else:
+                    st.warning(f"Needs: {100-total:.1f}%")
+            
+            # Composition Pie Chart
+            if len(st.session_state.selected_elements) > 1:
+                st.markdown('<div style="margin-top: 2rem;">', unsafe_allow_html=True)
+                fig_pie = create_composition_pie(
+                    st.session_state.selected_elements,
+                    [st.session_state.element_fractions.get(elem, 0) for elem in st.session_state.selected_elements]
+                )
+                st.plotly_chart(fig_pie, use_container_width=True, config={'displayModeBar': False})
+                st.markdown('</div>', unsafe_allow_html=True)
+            
+            st.markdown('</div>', unsafe_allow_html=True)
+            
+            # Predict Button
+            if st.button("🚀 Predict Properties", use_container_width=True, type="primary"):
+                composition = "".join([f"{elem}{int(st.session_state.element_fractions[elem])}" 
+                                     for elem in st.session_state.selected_elements])
+                with st.spinner("🔬 Analyzing alloy composition..."):
+                    st.session_state.predictions = process_alloys_demo(composition)
+    
+    with col2:
+        # Results Display
+        if st.session_state.predictions is not None:
+            st.markdown('<div class="section-title">Prediction Results</div>', unsafe_allow_html=True)
+            st.markdown('<div class="glass-card">', unsafe_allow_html=True)
+            
+            pred = st.session_state.predictions
+            
+            # Key Metrics
+            cols_metrics = st.columns(3)
+            with cols_metrics[0]:
+                st.markdown("""
+                <div class="metric-card">
+                    <div class="metric-label">GFA Score</div>
+                    <div class="metric-value">{:.2f}</div>
+                    <div style="color: #94A3B8; font-size: 0.8rem;">Dmax (mm)</div>
+                </div>
+                """.format(pred['Predicted_Dmax']), unsafe_allow_html=True)
+            
+            with cols_metrics[1]:
+                st.markdown("""
+                <div class="metric-card">
+                    <div class="metric-label">ΔT Range</div>
+                    <div class="metric-value">{:.0f}</div>
+                    <div style="color: #94A3B8; font-size: 0.8rem;">Tx - Tg (K)</div>
+                </div>
+                """.format(pred['Predicted_Tx'] - pred['Predicted_Tg']), unsafe_allow_html=True)
+            
+            with cols_metrics[2]:
+                st.markdown("""
+                <div class="metric-card">
+                    <div class="metric-label">Rc</div>
+                    <div class="metric-value">{:.1f}</div>
+                    <div style="color: #94A3B8; font-size: 0.8rem;">K/s</div>
+                </div>
+                """.format(pred['Predicted_Rc']), unsafe_allow_html=True)
+            
+            # Property Details
+            st.markdown('<div style="margin-top: 2rem;">', unsafe_allow_html=True)
+            
+            properties = [
+                ("Phase", pred['Predicted_Phase'], f"({pred['Phase_Confidence']:.1%})"),
+                ("Glass Transition (Tg)", f"{pred['Predicted_Tg']:.1f} K", "onset"),
+                ("Crystallization (Tx)", f"{pred['Predicted_Tx']:.1f} K", "peak"),
+                ("Liquidus (Tl)", f"{pred['Predicted_Tl']:.1f} K", "complete"),
+                ("Supercooled Region", f"{pred['Predicted_Tx'] - pred['Predicted_Tg']:.1f} K", "ΔT"),
+                ("Critical Diameter", f"{pred['Predicted_Dmax']:.4f} mm", "Dmax"),
+                ("Critical Cooling Rate", f"{pred['Predicted_Rc']:.3f} K/s", "Rc"),
+            ]
+            
+            for name, value, note in properties:
+                st.markdown(f"""
+                <div class="property-display">
+                    <div>
+                        <div class="property-label">{name}</div>
+                        <div style="color: #64748B; font-size: 0.8rem; margin-top: 0.25rem;">{note}</div>
+                    </div>
+                    <div class="property-value">{value}</div>
+                </div>
+                """, unsafe_allow_html=True)
+            
+            st.markdown('</div>', unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)
+            
+            # Glass Forming Ability Gauge
+            st.markdown('<div class="section-title">Glass Forming Ability</div>', unsafe_allow_html=True)
+            st.markdown('<div class="gauge-container">', unsafe_allow_html=True)
+            fig_gauge = create_glowing_gauge(pred)
+            st.plotly_chart(fig_gauge, use_container_width=True, config={'displayModeBar': False})
+            st.markdown('</div>', unsafe_allow_html=True)
+            
+            # Download Results
+            results_df = pd.DataFrame({
+                'Alloy': [composition],
+                'Phase': [pred['Predicted_Phase']],
+                'Confidence': [pred['Phase_Confidence']],
+                'Tg_K': [pred['Predicted_Tg']],
+                'Tx_K': [pred['Predicted_Tx']],
+                'Tl_K': [pred['Predicted_Tl']],
+                'Delta_T_K': [pred['Predicted_Tx'] - pred['Predicted_Tg']],
+                'Dmax_mm': [pred['Predicted_Dmax']],
+                'Rc_Ks': [pred['Predicted_Rc']]
+            })
+            
+            st.markdown(get_download_link(results_df), unsafe_allow_html=True)
+        else:
+            st.markdown('<div class="section-title">Prediction Panel</div>', unsafe_allow_html=True)
+            st.markdown("""
+            <div class="glass-card" style="text-align: center; padding: 4rem 2rem;">
+                <div style="font-size: 4rem; color: #334155; margin-bottom: 1rem;">⚗️</div>
+                <div style="color: #00B4DB; font-size: 1.5rem; font-weight: 600; margin-bottom: 1rem; font-family: 'Space Grotesk', sans-serif;">
+                    Ready for Analysis
+                </div>
+                <div style="color: #94A3B8; margin-bottom: 2rem;">
+                    Select elements and set composition to get predictions
+                </div>
+                <div style="display: flex; justify-content: center; gap: 1rem; color: #64748B; font-size: 0.9rem;">
+                    <div style="text-align: center;">
+                        <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">🔬</div>
+                        <div>Phase Prediction</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">🌡️</div>
+                        <div>Thermal Properties</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">📊</div>
+                        <div>GFA Analysis</div>
+                    </div>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
     
     st.markdown('</div>', unsafe_allow_html=True)
 
 # Footer
 st.markdown("""
-<div style="text-align: center; color: rgba(255,255,255,0.5); padding: 30px; font-size: 0.9rem; margin-top: 20px;">
-    <div style="display: flex; justify-content: center; gap: 30px; margin-bottom: 10px;">
-        <span>🔬 Advanced Materials Prediction</span>
-        <span>⚡ Machine Learning Powered</span>
-        <span>🎯 High Accuracy Models</span>
+<div style="text-align: center; padding: 2rem; margin-top: 3rem; border-top: 1px solid rgba(255, 255, 255, 0.1);">
+    <div style="color: #64748B; font-size: 0.9rem; margin-bottom: 0.5rem;">
+        BMGcalc v2.0 • Bulk Metallic Glass Design Platform
     </div>
-    <div>BMGcalc v2.0 • © 2024 • Alloy Design Platform</div>
+    <div style="color: #475569; font-size: 0.8rem;">
+        Powered by Machine Learning • For Research & Development
+    </div>
 </div>
 """, unsafe_allow_html=True)
