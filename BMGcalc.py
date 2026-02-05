@@ -8,6 +8,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 import periodictable
 import base64
+import re
 
 # Set page configuration
 st.set_page_config(
@@ -304,6 +305,50 @@ st.markdown("""
         align-items: center;
         gap: 0.3rem;
     }
+    
+    /* Manual composition input */
+    .composition-input {
+        background: rgba(30, 41, 59, 0.7) !important;
+        border: 1px solid rgba(0, 180, 219, 0.3) !important;
+        color: white !important;
+        border-radius: 6px;
+        padding: 0.5rem 0.75rem !important;
+    }
+    
+    .composition-input:focus {
+        border-color: #00B4DB !important;
+        box-shadow: 0 0 0 2px rgba(0, 180, 219, 0.2) !important;
+    }
+    
+    /* Composition string examples */
+    .examples-box {
+        background: rgba(30, 41, 59, 0.5);
+        border: 1px solid rgba(0, 180, 219, 0.2);
+        border-radius: 6px;
+        padding: 0.6rem;
+        margin: 0.5rem 0;
+        font-size: 0.75rem;
+        color: #94A3B8;
+    }
+    
+    /* Animation for auto-adjust */
+    @keyframes adjustAnimation {
+        0% { background-color: rgba(59, 130, 246, 0.1); }
+        50% { background-color: rgba(59, 130, 246, 0.3); }
+        100% { background-color: rgba(30, 41, 59, 0.8); }
+    }
+    
+    .adjusting {
+        animation: adjustAnimation 1s ease-in-out;
+    }
+    
+    /* Value change indicator */
+    .value-change {
+        color: #F59E0B;
+        font-size: 0.7rem;
+        font-weight: 600;
+        margin-left: 0.3rem;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -318,6 +363,10 @@ if 'show_periodic_table' not in st.session_state:
     st.session_state.show_periodic_table = True
 if 'locked_elements' not in st.session_state:
     st.session_state.locked_elements = []
+if 'previous_fractions' not in st.session_state:
+    st.session_state.previous_fractions = {}
+if 'show_manual_input' not in st.session_state:
+    st.session_state.show_manual_input = False
 
 # Accurate periodic table layout
 PERIODIC_TABLE = {
@@ -400,10 +449,39 @@ def create_composition_pie(elements, fractions):
     
     return fig
 
+def parse_composition_string(comp_str):
+    """Parse composition string like Cu50Zr50 or Cu50Zr25Al25"""
+    pattern = r'([A-Z][a-z]?)(\d+(?:\.\d+)?)'
+    matches = re.findall(pattern, comp_str)
+    
+    if not matches:
+        return None, None
+    
+    elements = []
+    fractions = []
+    total = 0
+    
+    for match in matches:
+        element = match[0]
+        fraction = float(match[1])
+        elements.append(element)
+        fractions.append(fraction)
+        total += fraction
+    
+    # Normalize to 100%
+    if total > 0:
+        fractions = [f/total*100 for f in fractions]
+    
+    return elements, fractions
+
 def auto_adjust_composition():
     """Auto-adjust composition to sum to 100%, respecting locked elements"""
     if not st.session_state.selected_elements:
         return
+    
+    # Store previous values for animation
+    for elem in st.session_state.selected_elements:
+        st.session_state.previous_fractions[elem] = st.session_state.element_fractions.get(elem, 0)
     
     # Get current locked elements
     locked = st.session_state.locked_elements
@@ -412,15 +490,17 @@ def auto_adjust_composition():
     # Calculate total from locked elements
     locked_total = sum(st.session_state.element_fractions.get(elem, 0) for elem in locked)
     
-    # Calculate remaining to distribute among unlocked
-    remaining = 100 - locked_total
-    
-    if remaining < 0:
-        # If locked total exceeds 100%, reduce locked proportionally
+    # If locked total > 100%, scale down locked elements proportionally
+    if locked_total > 100:
         scale_factor = 100 / locked_total
         for elem in locked:
             st.session_state.element_fractions[elem] *= scale_factor
         locked_total = 100
+    
+    # Calculate remaining to distribute among unlocked
+    remaining = 100 - locked_total
+    
+    if remaining < 0:
         remaining = 0
     
     # Distribute remaining among unlocked elements
@@ -429,13 +509,17 @@ def auto_adjust_composition():
         for elem in unlocked:
             st.session_state.element_fractions[elem] = equal_share
     elif remaining > 0:
-        # All elements are locked, distribute excess equally
+        # All elements are locked, distribute excess equally among locked
         equal_share = remaining / len(locked)
         for elem in locked:
             st.session_state.element_fractions[elem] += equal_share
 
 def handle_element_change(changed_element, new_value):
-    """Handle when an element value is changed"""
+    """Handle when an element value is changed with visible adjustment"""
+    # Store previous values
+    for elem in st.session_state.selected_elements:
+        st.session_state.previous_fractions[elem] = st.session_state.element_fractions.get(elem, 0)
+    
     # Update the changed element
     st.session_state.element_fractions[changed_element] = new_value
     
@@ -443,31 +527,26 @@ def handle_element_change(changed_element, new_value):
     locked = st.session_state.locked_elements
     all_elements = st.session_state.selected_elements
     
-    # Calculate total from all elements
-    current_total = sum(st.session_state.element_fractions.get(elem, 0) for elem in all_elements)
-    
     if changed_element in locked:
         # If a locked element is changed, adjust unlocked elements
         unlocked = [elem for elem in all_elements if elem not in locked]
         if unlocked:
             # Calculate new locked total
             locked_total = sum(st.session_state.element_fractions.get(elem, 0) for elem in locked)
-            remaining = 100 - locked_total
             
-            if remaining < 0:
-                # If locked total exceeds 100%, reduce it proportionally
+            # Cap locked total at 100
+            if locked_total > 100:
                 scale_factor = 100 / locked_total
                 for elem in locked:
                     st.session_state.element_fractions[elem] *= scale_factor
                 locked_total = 100
-                remaining = 0
             
-            # Distribute remaining among unlocked
+            remaining = 100 - locked_total
             equal_share = remaining / len(unlocked)
             for elem in unlocked:
                 st.session_state.element_fractions[elem] = equal_share
     else:
-        # If unlocked element is changed, auto-adjust all unlocked except the changed one
+        # If unlocked element is changed, auto-adjust other unlocked elements
         unlocked = [elem for elem in all_elements if elem not in locked]
         other_unlocked = [elem for elem in unlocked if elem != changed_element]
         
@@ -475,21 +554,22 @@ def handle_element_change(changed_element, new_value):
             # Calculate total from locked and changed element
             locked_total = sum(st.session_state.element_fractions.get(elem, 0) for elem in locked)
             current_changed = st.session_state.element_fractions[changed_element]
+            
+            # Ensure changed value doesn't exceed available
+            max_allowed = 100 - locked_total
+            if current_changed > max_allowed:
+                st.session_state.element_fractions[changed_element] = max_allowed
+                current_changed = max_allowed
+            
             remaining = 100 - locked_total - current_changed
             
             if remaining < 0:
-                # Adjust changed element if total exceeds 100%
-                max_allowed = 100 - locked_total
-                st.session_state.element_fractions[changed_element] = max_allowed
                 remaining = 0
             
             # Distribute remaining among other unlocked elements
             equal_share = remaining / len(other_unlocked)
             for elem in other_unlocked:
                 st.session_state.element_fractions[elem] = equal_share
-    
-    # Final check to ensure total is exactly 100%
-    auto_adjust_composition()
 
 def process_alloys_demo(composition_string):
     """Demo prediction function"""
@@ -575,7 +655,7 @@ with st.container():
                                 else:
                                     if len(st.session_state.selected_elements) < num_elements:
                                         st.session_state.selected_elements.append(element)
-                                        # Initialize fractions
+                                        # Initialize fractions with equal distribution
                                         auto_adjust_composition()
                                     else:
                                         st.warning(f"Maximum {num_elements} elements allowed")
@@ -585,6 +665,57 @@ with st.container():
                             st.write("")
             
             st.markdown('</div>', unsafe_allow_html=True)
+        
+        # Manual Composition Input
+        st.markdown('<div class="section-title">Manual Composition Input</div>', unsafe_allow_html=True)
+        st.markdown('<div class="glass-card">', unsafe_allow_html=True)
+        
+        # Toggle for manual input
+        col_toggle1, col_toggle2 = st.columns([3, 1])
+        with col_toggle1:
+            st.session_state.show_manual_input = st.toggle(
+                "Enter composition as string",
+                value=st.session_state.show_manual_input,
+                help="Enter composition like Cu50Zr50 or Cu50Zr25Al25"
+            )
+        
+        if st.session_state.show_manual_input:
+            # Composition string input
+            comp_string = st.text_input(
+                "Enter composition (e.g., Cu50Zr50 or Cu50Zr25Al25):",
+                key="composition_string",
+                placeholder="Cu50Zr50",
+                help="Format: ElementSymbolNumber (no spaces)"
+            )
+            
+            # Examples
+            st.markdown("""
+            <div class="examples-box">
+                <strong>Examples:</strong><br>
+                • Cu50Zr50 (Cu 50%, Zr 50%)<br>
+                • Cu50Zr25Al25 (Cu 50%, Zr 25%, Al 25%)<br>
+                • Fe40Ni40P14B6 (Fe 40%, Ni 40%, P 14%, B 6%)
+            </div>
+            """, unsafe_allow_html=True)
+            
+            col_apply1, col_apply2 = st.columns([3, 1])
+            with col_apply2:
+                if st.button("Apply", key="apply_composition", type="secondary"):
+                    if comp_string:
+                        elements, fractions = parse_composition_string(comp_string)
+                        if elements and fractions:
+                            st.session_state.selected_elements = elements
+                            st.session_state.element_fractions = {elem: frac for elem, frac in zip(elements, fractions)}
+                            st.session_state.locked_elements = []  # Clear locks when applying new composition
+                            st.session_state.show_manual_input = False  # Hide manual input after applying
+                            st.success(f"Applied composition: {comp_string}")
+                            st.rerun()
+                        else:
+                            st.error("Invalid format. Use format like Cu50Zr50")
+                    else:
+                        st.warning("Please enter a composition string")
+        
+        st.markdown('</div>', unsafe_allow_html=True)
         
         # Selected Elements Display
         if st.session_state.selected_elements:
@@ -612,19 +743,23 @@ with st.container():
             st.markdown('<div class="glass-card">', unsafe_allow_html=True)
             
             # Auto-adjust info
-            st.markdown('<div class="auto-adjust-info">🔧 Auto-Adjust: Composition always sums to 100%</div>', unsafe_allow_html=True)
+            st.markdown('<div class="auto-adjust-info">⚡ Auto-Adjust: Composition always sums to 100% (changes visible)</div>', unsafe_allow_html=True)
             
-            # Calculate total before displaying sliders
+            # Calculate total and adjust if needed
             total = sum(st.session_state.element_fractions.get(elem, 0) for elem in st.session_state.selected_elements)
             if abs(total - 100) > 0.1:
                 auto_adjust_composition()
+            
+            # Store previous values before any changes
+            previous_values = {elem: st.session_state.element_fractions.get(elem, 0) 
+                             for elem in st.session_state.selected_elements}
             
             # Display sliders for each element
             for elem in st.session_state.selected_elements:
                 # Get current value
                 current_val = st.session_state.element_fractions.get(elem, 100/len(st.session_state.selected_elements))
                 
-                # Create columns for slider and lock button
+                # Create columns for slider, value display, and lock button
                 col_left, col_mid, col_right = st.columns([3, 1, 1])
                 
                 with col_left:
@@ -642,15 +777,27 @@ with st.container():
                         disabled=is_locked
                     )
                     
-                    # Handle value change
+                    # Handle value change if different
                     if abs(new_val - current_val) > 0.01:
                         handle_element_change(elem, new_val)
                         st.rerun()
                 
                 with col_mid:
-                    # Display current value
+                    # Display current value with change indicator
                     display_val = st.session_state.element_fractions.get(elem, 0)
-                    st.markdown(f'<div style="color: #00B4DB; font-weight: 700; padding-top: 0.5rem;">{display_val:.1f}%</div>', unsafe_allow_html=True)
+                    prev_val = previous_values.get(elem, display_val)
+                    
+                    # Show change indicator if value changed
+                    change_indicator = ""
+                    if abs(display_val - prev_val) > 0.1:
+                        change = display_val - prev_val
+                        sign = "+" if change > 0 else ""
+                        change_indicator = f'<span class="value-change">{sign}{change:.1f}</span>'
+                    
+                    st.markdown(
+                        f'<div style="color: #00B4DB; font-weight: 700; padding-top: 0.5rem;">{display_val:.1f}%{change_indicator}</div>',
+                        unsafe_allow_html=True
+                    )
                 
                 with col_right:
                     # Lock/unlock button
@@ -807,20 +954,20 @@ with st.container():
                 <div style="margin-top: 1.5rem; color: #94A3B8; font-size: 0.8rem;">
                     <div style="display: flex; justify-content: center; gap: 1rem; margin-bottom: 0.5rem;">
                         <div style="text-align: center;">
-                            <div style="color: #00B4DB; font-weight: 600;">🔒</div>
-                            <div>Lock elements</div>
+                            <div style="color: #00B4DB; font-weight: 600;">📝</div>
+                            <div>Manual input</div>
                         </div>
                         <div style="text-align: center;">
-                            <div style="color: #00B4DB; font-weight: 600;">🔓</div>
-                            <div>Auto-adjust others</div>
+                            <div style="color: #00B4DB; font-weight: 600;">🔒</div>
+                            <div>Lock values</div>
                         </div>
                         <div style="text-align: center;">
                             <div style="color: #00B4DB; font-weight: 600;">⚡</div>
-                            <div>Always sums to 100%</div>
+                            <div>Auto-adjust</div>
                         </div>
                     </div>
                     <div style="font-style: italic; color: #64748B;">
-                        Maximum (n-2) elements can be locked
+                        Use manual input or periodic table
                     </div>
                 </div>
             </div>
