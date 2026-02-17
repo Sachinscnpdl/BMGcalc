@@ -1,0 +1,12 @@
+{
+    "random_seed": 42,
+    "k_folds": 5,
+    "n_repeats": 5,
+    "epochs": 1000,
+    "batch_size": 8,
+    "max_lr": 0.0005,
+    "weight_decay": 0.05,
+    "patience": 100,
+    "top_features": 12,
+    "best_global_mae": 0.34225642690946234
+}

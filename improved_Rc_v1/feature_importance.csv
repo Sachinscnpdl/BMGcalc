@@ -1,0 +1,13 @@
+Feature,Importance
+MagpieData minimum NUnfilled,0.11294155869203318
+MagpieData range NdValence,0.10929651539973177
+MagpieData avg_dev NdValence,0.05322751743105926
+MagpieData maximum NdValence,0.04795612162127977
+MagpieData avg_dev Row,0.027742854065454556
+MagpieData mode NfValence,0.02478614076556195
+avg f valence electrons,0.024334758936785075
+frac f valence electrons,0.022293817926137324
+MagpieData mode Column,0.022221144772902275
+MagpieData mean NfValence,0.01826709003545642
+MagpieData mode Electronegativity,0.017961629653872588
+MagpieData mean NValence,0.016825658158261477

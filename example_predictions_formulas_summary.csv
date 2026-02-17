@@ -1,0 +1,5 @@
+Alloy,Phase,Tg_K,Tx_K,Tl_K,Dmax_mm,Rc_mm/s
+Cu50Zn50,Metalic_Glass,N/A,N/A,N/A,0.27,6.34e+03
+Cu50Zn40Al10,Metalic_Glass,N/A,N/A,N/A,0.27,6.41e+03
+Fe70Ni30,Metalic_Glass,N/A,N/A,N/A,0.33,5.30e+03
+Al90Si10,Metalic_Glass,N/A,N/A,N/A,0.28,5.22e+03
