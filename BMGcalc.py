@@ -503,7 +503,7 @@ def process_batch_csv(uploaded_file):
 def get_download_link(df, filename="bmg_predictions.csv"):
     csv = df.to_csv(index=False)
     b64 = base64.b64encode(csv.encode()).decode()
-    safe_filename = html.escape(filename)  # <-- escape filename
+    safe_filename = html.escape(filename)
     href = f'''
     <a href="data:file/csv;base64,{b64}" download="{safe_filename}" 
        style="background: linear-gradient(90deg, #10B981 0%, #059669 100%); 
@@ -543,7 +543,7 @@ with col1:
         if st.session_state.predictions is not None:
             composition_str = "".join([f"{elem}{int(st.session_state.element_fractions[elem])}" 
                                       for elem in st.session_state.selected_elements])
-            safe_composition = html.escape(composition_str)  # <-- escape
+            safe_composition = html.escape(composition_str)
             safe_elements = [html.escape(elem) for elem in st.session_state.selected_elements]
             st.markdown('<div class="section-title">Current Composition</div>', unsafe_allow_html=True)
             st.markdown(f'''
@@ -685,8 +685,11 @@ with col1:
                                 st.rerun()
                         with col_mid:
                             display_val = st.session_state.element_fractions.get(elem, 0)
+                            # FIX: format before escaping
+                            formatted_val = f"{display_val:.1f}"
+                            safe_val = html.escape(formatted_val)
                             st.markdown(
-                                f'<div style="color: #00B4DB; font-weight: 700; padding-top: 0.5rem;">{html.escape(str(display_val)):.1f}%</div>',
+                                f'<div style="color: #00B4DB; font-weight: 700; padding-top: 0.5rem;">{safe_val}%</div>',
                                 unsafe_allow_html=True
                             )
                         with col_right:
@@ -767,8 +770,11 @@ with col1:
                             st.rerun()
                     with col_mid:
                         display_val = st.session_state.element_fractions.get(elem, 0)
+                        # FIX: format before escaping
+                        formatted_val = f"{display_val:.1f}"
+                        safe_val = html.escape(formatted_val)
                         st.markdown(
-                            f'<div style="color: #00B4DB; font-weight: 700; padding-top: 0.5rem;">{html.escape(str(display_val)):.1f}%</div>',
+                            f'<div style="color: #00B4DB; font-weight: 700; padding-top: 0.5rem;">{safe_val}%</div>',
                             unsafe_allow_html=True
                         )
                     with col_right:
@@ -862,7 +868,6 @@ with col2:
             pred = st.session_state.predictions
             metric_cols = st.columns([1, 2])
             with metric_cols[0]:
-                # Escape the numeric value (though unlikely to contain harmful chars, we do it anyway)
                 delta_value = html.escape(str(pred['Predicted_Tx'] - pred['Predicted_Tg']))
                 st.markdown(f"""
                 <div class="metric-card">
