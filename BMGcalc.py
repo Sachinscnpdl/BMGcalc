@@ -1,3 +1,4 @@
+# Authored by Sachin Poudel, Silesian University, Poland
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
@@ -113,7 +114,7 @@ st.markdown("""
     }
     
     .metric-label {
-        color: #94A3B8;
+        color: #94A3B8;              /* darker gray */
         font-size: 0.75rem;
         font-weight: 600;
         text-transform: uppercase;
@@ -122,7 +123,7 @@ st.markdown("""
     }
     
     .metric-value {
-        color: #00B4DB;
+        color: #00B4DB;               /* deeper cyan */
         font-size: 2rem;
         font-weight: 800;
         font-family: 'Space Grotesk', sans-serif;
@@ -136,7 +137,7 @@ st.markdown("""
     }
     
     .metric-sub {
-        color: #64748B;
+        color: #64748B;                /* darker than before */
         font-size: 0.7rem;
         margin-top: 0.3rem;
         font-weight: 500;
@@ -165,13 +166,13 @@ st.markdown("""
     }
     
     .property-label {
-        color: #A0AEC0;
+        color: #A0AEC0;               /* darker, more muted */
         font-size: 0.9rem;
         font-weight: 500;
     }
     
     .property-value {
-        color: #00B4DB;
+        color: #00B4DB;               /* deeper cyan */
         font-size: 0.95rem;
         font-weight: 700;
         font-family: 'Space Grotesk', sans-serif;
@@ -246,14 +247,15 @@ st.markdown("""
         font-weight: 600 !important;
     }
     
+    /* EXAMPLES BOX – improved contrast */
     .examples-box {
-        background: #1F2A3A;
-        border: 1px solid #2D3A4A;
+        background: #1F2A3A;          /* darker background */
+        border: 1px solid #2D3A4A;    /* subtle border */
         border-radius: 6px;
         padding: 0.6rem;
         margin: 0.5rem 0;
         font-size: 0.75rem;
-        color: #E0E0E0;
+        color: #E0E0E0;                /* brighter text */
         line-height: 1.5;
     }
     
@@ -281,7 +283,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Initialize session state
+# Initialize session state (unchanged)
 if 'selected_elements' not in st.session_state:
     st.session_state.selected_elements = []
 if 'predictions' not in st.session_state:
@@ -462,36 +464,16 @@ def handle_element_change(changed_element, new_value):
             for elem in other_unlocked:
                 st.session_state.element_fractions[elem] = equal_share
 
-def safe_string(s, default="Unknown"):
-    """Convert any input to a clean ASCII string, removing invalid characters."""
-    if pd.isna(s):
-        return default
-    try:
-        # Convert to string and encode/decode to strip non-ASCII
-        s = str(s).encode('ascii', 'ignore').decode('ascii')
-        # Remove any remaining control characters (0-31, 127)
-        s = ''.join(c for c in s if 32 <= ord(c) <= 126)
-        s = s.strip()
-        if not s:
-            return default
-        return s
-    except Exception:
-        return default
-
 def process_single_alloy(composition_string):
     """Predict for a single alloy using the pipeline."""
     try:
         pipeline = ModularBMGPipeline()
         result_df = pipeline.run_pipeline(composition_string, output_csv=None)
         row = result_df.iloc[0]
-        
-        # Sanitize phase string
-        phase = safe_string(row.get('Predicted_Phase', 'Unknown'))
-        
         pred = {
             'Alloys': row['Alloys'],
-            'Predicted_Phase': phase,
-            'Phase_Confidence': float(row.get('Phase_Confidence', 0.95)),
+            'Predicted_Phase': row['Predicted_Phase'],
+            'Phase_Confidence': row.get('Phase_Confidence', 0.95),
             'Predicted_Tg': float(row['Predicted_Tg']),
             'Predicted_Tx': float(row['Predicted_Tx']),
             'Predicted_Tl': float(row['Predicted_Tl']),
@@ -500,9 +482,7 @@ def process_single_alloy(composition_string):
         }
         return pred
     except Exception as e:
-        # Return a clean error message (no special characters)
-        error_msg = safe_string(str(e), "Unknown error")
-        st.session_state.prediction_error = error_msg
+        st.session_state.prediction_error = str(e)
         return None
 
 def process_batch_csv(uploaded_file):
@@ -513,18 +493,10 @@ def process_batch_csv(uploaded_file):
             raise ValueError("CSV must contain an 'Alloys' column")
         pipeline = ModularBMGPipeline()
         result_df = pipeline.run_pipeline(df_input, output_csv=None)
-        # Rename columns for display (optional)
-        result_df.rename(columns={
-            'Predicted_Dmax_mm': 'Dmax_mm',
-            'Predicted_Rc_Ks': 'Rc_Ks'
-        }, inplace=True)
-        # Sanitize any string columns
-        for col in result_df.select_dtypes(include=['object']):
-            result_df[col] = result_df[col].apply(safe_string)
+        result_df.rename(columns={'Predicted_Dmax_mm': 'Dmax_mm', 'Predicted_Rc_Ks': 'Rc_Ks'}, inplace=True)
         return result_df
     except Exception as e:
-        error_msg = safe_string(str(e), "Unknown error")
-        st.session_state.batch_error = error_msg
+        st.session_state.batch_error = str(e)
         return None
 
 def get_download_link(df, filename="bmg_predictions.csv"):
