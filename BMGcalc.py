@@ -1,4 +1,3 @@
-# Authored by Sachin Poudel, Silesian University, Poland
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
@@ -17,10 +16,9 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Custom CSS – improved contrast for results and examples
+# Custom CSS (unchanged)
 st.markdown("""
 <style>
-    /* Main Styles */
     .main-header {
         background: linear-gradient(90deg, #0F172A 0%, #1E293B 100%);
         padding: 1.5rem 2rem;
@@ -114,7 +112,7 @@ st.markdown("""
     }
     
     .metric-label {
-        color: #94A3B8;              /* darker gray */
+        color: #94A3B8;
         font-size: 0.75rem;
         font-weight: 600;
         text-transform: uppercase;
@@ -123,7 +121,7 @@ st.markdown("""
     }
     
     .metric-value {
-        color: #00B4DB;               /* deeper cyan */
+        color: #00B4DB;
         font-size: 2rem;
         font-weight: 800;
         font-family: 'Space Grotesk', sans-serif;
@@ -137,7 +135,7 @@ st.markdown("""
     }
     
     .metric-sub {
-        color: #64748B;                /* darker than before */
+        color: #64748B;
         font-size: 0.7rem;
         margin-top: 0.3rem;
         font-weight: 500;
@@ -166,19 +164,18 @@ st.markdown("""
     }
     
     .property-label {
-        color: #A0AEC0;               /* darker, more muted */
+        color: #A0AEC0;
         font-size: 0.9rem;
         font-weight: 500;
     }
     
     .property-value {
-        color: #00B4DB;               /* deeper cyan */
+        color: #00B4DB;
         font-size: 0.95rem;
         font-weight: 700;
         font-family: 'Space Grotesk', sans-serif;
     }
     
-    /* Compact composition display */
     .compact-composition {
         background: rgba(30, 41, 59, 0.5);
         border: 1px solid rgba(0, 180, 219, 0.2);
@@ -247,15 +244,14 @@ st.markdown("""
         font-weight: 600 !important;
     }
     
-    /* EXAMPLES BOX – improved contrast */
     .examples-box {
-        background: #1F2A3A;          /* darker background */
-        border: 1px solid #2D3A4A;    /* subtle border */
+        background: #1F2A3A;
+        border: 1px solid #2D3A4A;
         border-radius: 6px;
         padding: 0.6rem;
         margin: 0.5rem 0;
         font-size: 0.75rem;
-        color: #E0E0E0;                /* brighter text */
+        color: #E0E0E0;
         line-height: 1.5;
     }
     
@@ -283,7 +279,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Initialize session state (unchanged)
+# Initialize session state
 if 'selected_elements' not in st.session_state:
     st.session_state.selected_elements = []
 if 'predictions' not in st.session_state:
@@ -470,9 +466,15 @@ def process_single_alloy(composition_string):
         pipeline = ModularBMGPipeline()
         result_df = pipeline.run_pipeline(composition_string, output_csv=None)
         row = result_df.iloc[0]
+        
+        # Sanitize the phase string (remove any invalid characters)
+        phase = str(row['Predicted_Phase'])
+        # Keep only ASCII printable characters
+        phase = ''.join(c for c in phase if 32 <= ord(c) <= 126)
+        
         pred = {
             'Alloys': row['Alloys'],
-            'Predicted_Phase': row['Predicted_Phase'],
+            'Predicted_Phase': phase,
             'Phase_Confidence': row.get('Phase_Confidence', 0.95),
             'Predicted_Tg': float(row['Predicted_Tg']),
             'Predicted_Tx': float(row['Predicted_Tx']),
@@ -482,7 +484,9 @@ def process_single_alloy(composition_string):
         }
         return pred
     except Exception as e:
-        st.session_state.prediction_error = str(e)
+        # Return a clean error message (no special characters)
+        error_msg = str(e).encode('ascii', 'ignore').decode('ascii')
+        st.session_state.prediction_error = error_msg
         return None
 
 def process_batch_csv(uploaded_file):
@@ -493,10 +497,18 @@ def process_batch_csv(uploaded_file):
             raise ValueError("CSV must contain an 'Alloys' column")
         pipeline = ModularBMGPipeline()
         result_df = pipeline.run_pipeline(df_input, output_csv=None)
-        result_df.rename(columns={'Predicted_Dmax_mm': 'Dmax_mm', 'Predicted_Rc_Ks': 'Rc_Ks'}, inplace=True)
+        # Rename columns for display (optional)
+        result_df.rename(columns={
+            'Predicted_Dmax_mm': 'Dmax_mm',
+            'Predicted_Rc_Ks': 'Rc_Ks'
+        }, inplace=True)
+        # Sanitize any string columns
+        for col in result_df.select_dtypes(include=['object']):
+            result_df[col] = result_df[col].astype(str).apply(lambda s: ''.join(c for c in s if 32 <= ord(c) <= 126))
         return result_df
     except Exception as e:
-        st.session_state.batch_error = str(e)
+        error_msg = str(e).encode('ascii', 'ignore').decode('ascii')
+        st.session_state.batch_error = error_msg
         return None
 
 def get_download_link(df, filename="bmg_predictions.csv"):
@@ -537,7 +549,6 @@ with col1:
     )
     
     if mode == "Single Alloy":
-        # If predictions exist, show compact composition + edit button
         if st.session_state.predictions is not None:
             composition_str = "".join([f"{elem}{int(st.session_state.element_fractions[elem])}" 
                                       for elem in st.session_state.selected_elements])
@@ -556,8 +567,6 @@ with col1:
                 st.session_state.predictions = None
                 st.session_state.show_periodic_table = True
                 st.rerun()
-        
-        # No predictions: show full composition setup
         else:
             st.markdown('<div class="section-title">Element Selection</div>', unsafe_allow_html=True)
             num_elements = st.select_slider(
@@ -567,7 +576,6 @@ with col1:
                 key="num_elements"
             )
             
-            # Show/Hide periodic table button
             show_hide_col1, show_hide_col2 = st.columns([3, 1])
             with show_hide_col2:
                 button_label = "🔽 Hide Table" if st.session_state.show_periodic_table else "🔼 Show Table"
@@ -576,7 +584,6 @@ with col1:
                     st.session_state.show_periodic_table = not st.session_state.show_periodic_table
                     st.rerun()
             
-            # Periodic Table
             if st.session_state.show_periodic_table:
                 st.markdown('<div class="glass-card">', unsafe_allow_html=True)
                 for row_idx, row in PERIODIC_TABLE.items():
@@ -607,13 +614,11 @@ with col1:
                                 st.write("")
                 st.markdown('</div>', unsafe_allow_html=True)
             
-            # Manual Input Toggle
             if not st.session_state.show_manual_input:
                 if st.button("📝 Manual Input", key="toggle_manual", use_container_width=True, type="secondary"):
                     st.session_state.show_manual_input = True
                     st.rerun()
             
-            # ---- MANUAL INPUT CARD (merged with sliders when open) ----
             if st.session_state.show_manual_input:
                 st.markdown('<div class="glass-card">', unsafe_allow_html=True)
                 st.markdown("#### Manual Input")
@@ -653,7 +658,6 @@ with col1:
                     else:
                         st.warning("Please enter a composition string")
                 
-                # If there are selected elements, show the sliders inside this same card
                 if st.session_state.selected_elements:
                     st.markdown("---")
                     st.markdown("#### Adjust Composition")
@@ -733,9 +737,8 @@ with col1:
                                 st.session_state.show_periodic_table = False
                             st.rerun()
                 
-                st.markdown('</div>', unsafe_allow_html=True)  # close manual input card
+                st.markdown('</div>', unsafe_allow_html=True)
             
-            # ---- IF MANUAL INPUT IS CLOSED and there are selected elements, show the separate composition card ----
             if not st.session_state.show_manual_input and st.session_state.selected_elements:
                 st.markdown('<div class="section-title">Composition</div>', unsafe_allow_html=True)
                 st.markdown('<div class="glass-card">', unsafe_allow_html=True)
@@ -846,7 +849,6 @@ with col1:
         st.markdown('</div>', unsafe_allow_html=True)
 
 with col2:
-    # Results display
     if mode == "Single Alloy":
         if st.session_state.predictions is not None:
             st.markdown('<div class="section-title">Prediction Results</div>', unsafe_allow_html=True)
