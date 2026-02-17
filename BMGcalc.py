@@ -16,9 +16,10 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Custom CSS (unchanged)
+# Custom CSS – improved contrast for results and examples
 st.markdown("""
 <style>
+    /* Main Styles */
     .main-header {
         background: linear-gradient(90deg, #0F172A 0%, #1E293B 100%);
         padding: 1.5rem 2rem;
@@ -176,6 +177,7 @@ st.markdown("""
         font-family: 'Space Grotesk', sans-serif;
     }
     
+    /* Compact composition display */
     .compact-composition {
         background: rgba(30, 41, 59, 0.5);
         border: 1px solid rgba(0, 180, 219, 0.2);
@@ -460,6 +462,22 @@ def handle_element_change(changed_element, new_value):
             for elem in other_unlocked:
                 st.session_state.element_fractions[elem] = equal_share
 
+def safe_string(s, default="Unknown"):
+    """Convert any input to a clean ASCII string, removing invalid characters."""
+    if pd.isna(s):
+        return default
+    try:
+        # Convert to string and encode/decode to strip non-ASCII
+        s = str(s).encode('ascii', 'ignore').decode('ascii')
+        # Remove any remaining control characters (0-31, 127)
+        s = ''.join(c for c in s if 32 <= ord(c) <= 126)
+        s = s.strip()
+        if not s:
+            return default
+        return s
+    except Exception:
+        return default
+
 def process_single_alloy(composition_string):
     """Predict for a single alloy using the pipeline."""
     try:
@@ -467,15 +485,13 @@ def process_single_alloy(composition_string):
         result_df = pipeline.run_pipeline(composition_string, output_csv=None)
         row = result_df.iloc[0]
         
-        # Sanitize the phase string (remove any invalid characters)
-        phase = str(row['Predicted_Phase'])
-        # Keep only ASCII printable characters
-        phase = ''.join(c for c in phase if 32 <= ord(c) <= 126)
+        # Sanitize phase string
+        phase = safe_string(row.get('Predicted_Phase', 'Unknown'))
         
         pred = {
             'Alloys': row['Alloys'],
             'Predicted_Phase': phase,
-            'Phase_Confidence': row.get('Phase_Confidence', 0.95),
+            'Phase_Confidence': float(row.get('Phase_Confidence', 0.95)),
             'Predicted_Tg': float(row['Predicted_Tg']),
             'Predicted_Tx': float(row['Predicted_Tx']),
             'Predicted_Tl': float(row['Predicted_Tl']),
@@ -485,7 +501,7 @@ def process_single_alloy(composition_string):
         return pred
     except Exception as e:
         # Return a clean error message (no special characters)
-        error_msg = str(e).encode('ascii', 'ignore').decode('ascii')
+        error_msg = safe_string(str(e), "Unknown error")
         st.session_state.prediction_error = error_msg
         return None
 
@@ -504,10 +520,10 @@ def process_batch_csv(uploaded_file):
         }, inplace=True)
         # Sanitize any string columns
         for col in result_df.select_dtypes(include=['object']):
-            result_df[col] = result_df[col].astype(str).apply(lambda s: ''.join(c for c in s if 32 <= ord(c) <= 126))
+            result_df[col] = result_df[col].apply(safe_string)
         return result_df
     except Exception as e:
-        error_msg = str(e).encode('ascii', 'ignore').decode('ascii')
+        error_msg = safe_string(str(e), "Unknown error")
         st.session_state.batch_error = error_msg
         return None
 
@@ -549,6 +565,7 @@ with col1:
     )
     
     if mode == "Single Alloy":
+        # If predictions exist, show compact composition + edit button
         if st.session_state.predictions is not None:
             composition_str = "".join([f"{elem}{int(st.session_state.element_fractions[elem])}" 
                                       for elem in st.session_state.selected_elements])
@@ -567,6 +584,8 @@ with col1:
                 st.session_state.predictions = None
                 st.session_state.show_periodic_table = True
                 st.rerun()
+        
+        # No predictions: show full composition setup
         else:
             st.markdown('<div class="section-title">Element Selection</div>', unsafe_allow_html=True)
             num_elements = st.select_slider(
@@ -576,6 +595,7 @@ with col1:
                 key="num_elements"
             )
             
+            # Show/Hide periodic table button
             show_hide_col1, show_hide_col2 = st.columns([3, 1])
             with show_hide_col2:
                 button_label = "🔽 Hide Table" if st.session_state.show_periodic_table else "🔼 Show Table"
@@ -584,6 +604,7 @@ with col1:
                     st.session_state.show_periodic_table = not st.session_state.show_periodic_table
                     st.rerun()
             
+            # Periodic Table
             if st.session_state.show_periodic_table:
                 st.markdown('<div class="glass-card">', unsafe_allow_html=True)
                 for row_idx, row in PERIODIC_TABLE.items():
@@ -614,11 +635,13 @@ with col1:
                                 st.write("")
                 st.markdown('</div>', unsafe_allow_html=True)
             
+            # Manual Input Toggle
             if not st.session_state.show_manual_input:
                 if st.button("📝 Manual Input", key="toggle_manual", use_container_width=True, type="secondary"):
                     st.session_state.show_manual_input = True
                     st.rerun()
             
+            # ---- MANUAL INPUT CARD (merged with sliders when open) ----
             if st.session_state.show_manual_input:
                 st.markdown('<div class="glass-card">', unsafe_allow_html=True)
                 st.markdown("#### Manual Input")
@@ -658,6 +681,7 @@ with col1:
                     else:
                         st.warning("Please enter a composition string")
                 
+                # If there are selected elements, show the sliders inside this same card
                 if st.session_state.selected_elements:
                     st.markdown("---")
                     st.markdown("#### Adjust Composition")
@@ -737,8 +761,9 @@ with col1:
                                 st.session_state.show_periodic_table = False
                             st.rerun()
                 
-                st.markdown('</div>', unsafe_allow_html=True)
+                st.markdown('</div>', unsafe_allow_html=True)  # close manual input card
             
+            # ---- IF MANUAL INPUT IS CLOSED and there are selected elements, show the separate composition card ----
             if not st.session_state.show_manual_input and st.session_state.selected_elements:
                 st.markdown('<div class="section-title">Composition</div>', unsafe_allow_html=True)
                 st.markdown('<div class="glass-card">', unsafe_allow_html=True)
@@ -849,6 +874,7 @@ with col1:
         st.markdown('</div>', unsafe_allow_html=True)
 
 with col2:
+    # Results display
     if mode == "Single Alloy":
         if st.session_state.predictions is not None:
             st.markdown('<div class="section-title">Prediction Results</div>', unsafe_allow_html=True)
