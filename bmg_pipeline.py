@@ -19,11 +19,13 @@ import trained_stage2_with_predictions_flexible as s2_mod
 def featurize_alloys_complete(df, formula_col="Alloys"):
     """
     Complete featurization for alloys that ensures all features match training data.
-    This is the conservative fallback to use when the fast featurizer removes all columns
-    (e.g., because a single-row had all-constant values dropped).
+    This version EXCLUDES target columns (Phase, Tg, Tx, Tl, Dmax, Rc, etc.) from the features.
     """
     import numpy as np
     import pandas as pd
+
+    # List of columns that are targets, not features
+    TARGET_COLS = {'Phase', 'Tg', 'Tx', 'Tl', 'Dmax_mm', 'Rc_mm/s', 'Rc_Ks', 'gamma', 'Trg', 'delta_Tx'}
 
     # Try to load a canonical featurized header to preserve expected columns if available
     try:
@@ -91,11 +93,13 @@ def featurize_alloys_complete(df, formula_col="Alloys"):
 
     # If we have a required feature list, ensure columns exist (fill with NaN)
     if required_features is not None:
-        for feature in required_features:
+        # Filter out target columns from the required list
+        feature_cols = [c for c in required_features if c not in TARGET_COLS]
+        for feature in feature_cols:
             if feature not in result_df.columns:
                 result_df[feature] = np.nan
-        # keep ordering to match original (but only columns present)
-        common_features = [f for f in required_features if f in result_df.columns]
+        # keep ordering to match original (but only feature columns present)
+        common_features = [f for f in feature_cols if f in result_df.columns]
         result_df = result_df[common_features]
 
     # Fill NaNs sensibly: numeric -> 0, categorical -> mode or 'unknown'
