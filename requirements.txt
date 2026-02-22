@@ -1,29 +1,29 @@
-# Core Dependencies
-streamlit
-numpy
-pandas
+# Base App
+streamlit==1.30.0
 
-# Data Science & ML
+# Scientific Stack (Version matched to prevent "node array" errors)
+numpy==1.23.5
+pandas==1.5.3
+scipy==1.10.1
+
+# Machine Learning & Models
 scikit-learn==1.2.2
+joblib==1.2.0
 imbalanced-learn==0.10.1
 xgboost==2.1.4
 lightgbm==4.6.0
 category-encoders==2.6.4
-joblib==1.2.0
 
-# Deep Learning (PyTorch)
+# Deep Learning (Pytorch)
 torch==2.2.0
 torchvision==0.17.0
-torchaudio==2.2.0
-pytorch-ignite==0.4.13
 pytorch-tabnet==4.1.0
 
-# Visualization
-matplotlib==3.7.5
-matplotlib-inline==0.1.6
-plotly==5.14.0
-seaborn==0.13.2
+# Materials Science (Required for featurization)
+pymatgen==2023.8.10
+matminer==0.9.0
 
-# Specialized Materials Science
-pymatgen
-matminer
+# Visualization
+plotly==5.14.0
+matplotlib==3.7.5
+seaborn==0.13.2
