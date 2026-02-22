@@ -5,10 +5,8 @@ import plotly.graph_objects as go
 import numpy as np
 import re
 import base64
-
 # Import the full pipeline
 from bmg_pipeline import ModularBMGPipeline
-
 # Page configuration
 st.set_page_config(
     page_title="BMGcalc - Metallic Glass Predictor",
@@ -16,6 +14,12 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="collapsed"
 )
+
+# Add Google Fonts links to load custom fonts
+st.markdown('''
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+''', unsafe_allow_html=True)
 
 # Custom CSS – improved contrast for results and examples
 st.markdown("""
@@ -36,19 +40,19 @@ st.markdown("""
         font-family: 'Space Grotesk', sans-serif;
         position: relative;
     }
-    
+   
     .reset-btn-container {
         position: absolute;
         top: 1rem;
         right: 2rem;
     }
-    
+   
     .main-container {
         max-width: 100% !important;
         width: 100% !important;
         padding: 0 1rem;
     }
-    
+   
     .glass-card {
         background: rgba(30, 41, 59, 0.8);
         border: 1px solid rgba(0, 180, 219, 0.2);
@@ -59,12 +63,12 @@ st.markdown("""
         backdrop-filter: blur(10px);
         transition: all 0.3s ease;
     }
-    
+   
     .glass-card:hover {
         border-color: rgba(0, 180, 219, 0.4);
         box-shadow: 0 12px 40px rgba(0, 180, 219, 0.15);
     }
-    
+   
     .section-title {
         color: #00B4DB;
         font-size: 1.1rem;
@@ -75,7 +79,7 @@ st.markdown("""
         gap: 0.5rem;
         font-family: 'Space Grotesk', sans-serif;
     }
-    
+   
     .element-tag {
         background: linear-gradient(90deg, #00B4DB, #0083B0);
         color: white;
@@ -88,12 +92,12 @@ st.markdown("""
         box-shadow: 0 2px 8px rgba(0, 180, 219, 0.3);
         transition: all 0.2s ease;
     }
-    
+   
     .element-tag:hover {
         transform: translateY(-2px);
         box-shadow: 0 4px 12px rgba(0, 180, 219, 0.4);
     }
-    
+   
     /* METRIC CARDS – deeper cyan for values, darker labels */
     .metric-card {
         background: linear-gradient(135deg, rgba(0, 180, 219, 0.1), rgba(0, 131, 176, 0.1));
@@ -107,42 +111,42 @@ st.markdown("""
         flex-direction: column;
         justify-content: center;
     }
-    
+   
     .metric-card:hover {
         transform: translateY(-3px);
         box-shadow: 0 8px 25px rgba(0, 180, 219, 0.2);
     }
-    
+   
     .metric-label {
-        color: #94A3B8;              /* darker gray */
+        color: #94A3B8; /* darker gray */
         font-size: 0.75rem;
         font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 0.05em;
         margin-bottom: 0.5rem;
     }
-    
+   
     .metric-value {
-        color: #00B4DB;               /* deeper cyan */
+        color: #00B4DB; /* deeper cyan */
         font-size: 2rem;
         font-weight: 800;
         font-family: 'Space Grotesk', sans-serif;
         line-height: 1.2;
         text-shadow: 0 0 8px rgba(0, 180, 219, 0.3);
     }
-    
+   
     .metric-value.phase {
         font-size: 2.5rem;
         font-weight: 900;
     }
-    
+   
     .metric-sub {
-        color: #64748B;                /* darker than before */
+        color: #64748B; /* darker than before */
         font-size: 0.7rem;
         margin-top: 0.3rem;
         font-weight: 500;
     }
-    
+   
     /* PROPERTY ROWS – darker labels and deeper cyan values */
     .property-row {
         display: flex;
@@ -152,7 +156,7 @@ st.markdown("""
         border-bottom: 1px solid rgba(0, 180, 219, 0.1);
         transition: all 0.2s ease;
     }
-    
+   
     .property-row:hover {
         background: rgba(0, 180, 219, 0.05);
         padding-left: 0.5rem;
@@ -160,24 +164,24 @@ st.markdown("""
         margin: 0 -0.5rem;
         border-radius: 6px;
     }
-    
+   
     .property-row:last-child {
         border-bottom: none;
     }
-    
+   
     .property-label {
-        color: #A0AEC0;               /* darker, more muted */
+        color: #A0AEC0; /* darker, more muted */
         font-size: 0.9rem;
         font-weight: 500;
     }
-    
+   
     .property-value {
-        color: #00B4DB;               /* deeper cyan */
+        color: #00B4DB; /* deeper cyan */
         font-size: 0.95rem;
         font-weight: 700;
         font-family: 'Space Grotesk', sans-serif;
     }
-    
+   
     /* Compact composition display */
     .compact-composition {
         background: rgba(30, 41, 59, 0.5);
@@ -186,7 +190,7 @@ st.markdown("""
         padding: 1rem;
         margin-bottom: 1rem;
     }
-    
+   
     .composition-string {
         font-family: 'Space Grotesk', monospace;
         font-size: 1.2rem;
@@ -194,7 +198,7 @@ st.markdown("""
         color: #00B4DB;
         letter-spacing: 0.5px;
     }
-    
+   
     .gauge-container {
         background: rgba(30, 41, 59, 0.9);
         border: 1px solid rgba(0, 180, 219, 0.3);
@@ -203,7 +207,7 @@ st.markdown("""
         margin-bottom: 1.5rem;
         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
     }
-    
+   
     .stButton > button {
         background: linear-gradient(90deg, #00B4DB, #0083B0);
         color: white;
@@ -214,51 +218,51 @@ st.markdown("""
         transition: all 0.3s ease;
         font-family: 'Inter', sans-serif;
     }
-    
+   
     .stButton > button:hover {
         background: linear-gradient(90deg, #0083B0, #006994);
         transform: translateY(-2px);
         box-shadow: 0 6px 20px rgba(0, 180, 219, 0.3);
     }
-    
+   
     .stButton > button:active {
         transform: translateY(0);
     }
-    
+   
     .stSlider {
         margin-bottom: 1rem;
     }
-    
+   
     .stSlider > div > div > div {
         background: linear-gradient(90deg, #00B4DB, #0083B0) !important;
     }
-    
+   
     .stProgress > div > div {
         background: linear-gradient(90deg, #00B4DB, #0083B0);
     }
-    
+   
     .warning-text {
         color: #F87171 !important;
         font-weight: 600 !important;
     }
-    
+   
     .success-text {
         color: #4ADE80 !important;
         font-weight: 600 !important;
     }
-    
+   
     /* EXAMPLES BOX – improved contrast */
     .examples-box {
-        background: #1F2A3A;          /* darker background */
-        border: 1px solid #2D3A4A;    /* subtle border */
+        background: #1F2A3A; /* darker background */
+        border: 1px solid #2D3A4A; /* subtle border */
         border-radius: 6px;
         padding: 0.6rem;
         margin: 0.5rem 0;
         font-size: 0.75rem;
-        color: #E0E0E0;                /* brighter text */
+        color: #E0E0E0; /* brighter text */
         line-height: 1.5;
     }
-    
+   
     .stTextInput > div > div > input {
         background: rgba(30, 41, 59, 0.7) !important;
         border: 1px solid rgba(0, 180, 219, 0.3) !important;
@@ -266,12 +270,12 @@ st.markdown("""
         border-radius: 6px;
         padding: 0.5rem 0.75rem !important;
     }
-    
+   
     .stTextInput > div > div > input:focus {
         border-color: #00B4DB !important;
         box-shadow: 0 0 0 2px rgba(0, 180, 219, 0.2) !important;
     }
-    
+   
     .error-message {
         background: rgba(239, 68, 68, 0.1);
         border: 1px solid rgba(239, 68, 68, 0.3);
@@ -282,7 +286,6 @@ st.markdown("""
     }
 </style>
 """, unsafe_allow_html=True)
-
 # Initialize session state (unchanged)
 if 'selected_elements' not in st.session_state:
     st.session_state.selected_elements = []
@@ -307,7 +310,6 @@ if 'batch_error' not in st.session_state:
     st.session_state.batch_error = None
 if 'input_mode' not in st.session_state:
     st.session_state.input_mode = "Single Alloy"
-
 # Accurate periodic table layout
 PERIODIC_TABLE = {
     1: ["H", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "He"],
@@ -320,7 +322,6 @@ PERIODIC_TABLE = {
     8: ["", "", "Ce", "Pr", "Nd", "Pm", "Sm", "Eu", "Gd", "Tb", "Dy", "Ho", "Er", "Tm", "Yb", "Lu", "", ""],
     9: ["", "", "Th", "Pa", "U", "Np", "Pu", "Am", "Cm", "Bk", "Cf", "Es", "Fm", "Md", "No", "Lr", "", ""]
 }
-
 def reset_app():
     """Reset all session state to initial values."""
     st.session_state.selected_elements = []
@@ -332,7 +333,6 @@ def reset_app():
     st.session_state.prediction_error = None
     st.session_state.batch_results = None
     st.session_state.batch_error = None
-
 def create_simple_gauge(dmax_value):
     """Create a clean gauge chart for glass forming ability"""
     fig = go.Figure(go.Indicator(
@@ -363,7 +363,6 @@ def create_simple_gauge(dmax_value):
         font={'color': "#CBD5E1", 'family': "Inter"}
     )
     return fig
-
 def create_composition_pie(elements, fractions):
     """Create composition pie chart"""
     colors = ['#00B4DB', '#0083B0', '#006994', '#005073', '#003752', '#001F3F']
@@ -385,7 +384,6 @@ def create_composition_pie(elements, fractions):
         plot_bgcolor='rgba(0,0,0,0)',
     )
     return fig
-
 def parse_composition_string(comp_str):
     """Parse composition string like Cu50Zr50 or Cu50Zr25Al25"""
     pattern = r'([A-Z][a-z]?)(\d+(?:\.\d+)?)'
@@ -404,7 +402,6 @@ def parse_composition_string(comp_str):
     if total > 0:
         fractions = [f/total*100 for f in fractions]
     return elements, fractions
-
 def auto_adjust_composition():
     """Auto-adjust composition to sum to 100%, respecting locked elements"""
     if not st.session_state.selected_elements:
@@ -428,7 +425,6 @@ def auto_adjust_composition():
         equal_share = remaining / len(locked)
         for elem in locked:
             st.session_state.element_fractions[elem] += equal_share
-
 def handle_element_change(changed_element, new_value):
     """Handle when an element value is changed with visible adjustment"""
     st.session_state.element_fractions[changed_element] = new_value
@@ -463,7 +459,6 @@ def handle_element_change(changed_element, new_value):
             equal_share = remaining / len(other_unlocked)
             for elem in other_unlocked:
                 st.session_state.element_fractions[elem] = equal_share
-
 def process_single_alloy(composition_string):
     """Predict for a single alloy using the pipeline."""
     try:
@@ -484,7 +479,6 @@ def process_single_alloy(composition_string):
     except Exception as e:
         st.session_state.prediction_error = str(e)
         return None
-
 def process_batch_csv(uploaded_file):
     """Process a CSV file with multiple alloys."""
     try:
@@ -498,21 +492,19 @@ def process_batch_csv(uploaded_file):
     except Exception as e:
         st.session_state.batch_error = str(e)
         return None
-
 def get_download_link(df, filename="bmg_predictions.csv"):
     csv = df.to_csv(index=False)
-    b64 = base64.b64encode(csv.encode()).decode().replace('\n', '')  # Remove any newlines
+    b64 = base64.b64encode(csv.encode()).decode()
     href = f'''
-    <a href="data:file/csv;base64,{b64}" download="{filename}" 
-       style="background: linear-gradient(90deg, #10B981 0%, #059669 100%); 
-              color: white; padding: 0.6rem 1.2rem; border-radius: 6px; 
-              text-decoration: none; font-weight: 600; display: block; 
+    <a href="data:file/csv;base64,{b64}" download="{filename}"
+       style="background: linear-gradient(90deg, #10B981 0%, #059669 100%);
+              color: white; padding: 0.6rem 1.2rem; border-radius: 6px;
+              text-decoration: none; font-weight: 600; display: block;
               text-align: center; font-size: 0.9rem;">
         📥 Download Results
     </a>
     '''
     return href
-
 # MAIN APP
 header_col1, header_col2 = st.columns([6, 1])
 with header_col1:
@@ -523,10 +515,8 @@ with header_col2:
         reset_app()
         st.rerun()
     st.markdown('</div>', unsafe_allow_html=True)
-
 st.markdown('<div class="main-container">', unsafe_allow_html=True)
 col1, col2 = st.columns([1, 1], gap="large")
-
 with col1:
     st.markdown('<div class="section-title">Input Mode</div>', unsafe_allow_html=True)
     mode = st.radio(
@@ -535,11 +525,11 @@ with col1:
         horizontal=True,
         key="input_mode"
     )
-    
+   
     if mode == "Single Alloy":
         # If predictions exist, show compact composition + edit button
         if st.session_state.predictions is not None:
-            composition_str = "".join([f"{elem}{int(st.session_state.element_fractions[elem])}" 
+            composition_str = "".join([f"{elem}{int(st.session_state.element_fractions[elem])}"
                                       for elem in st.session_state.selected_elements])
             st.markdown('<div class="section-title">Current Composition</div>', unsafe_allow_html=True)
             st.markdown(f'''
@@ -556,7 +546,7 @@ with col1:
                 st.session_state.predictions = None
                 st.session_state.show_periodic_table = True
                 st.rerun()
-        
+       
         # No predictions: show full composition setup
         else:
             st.markdown('<div class="section-title">Element Selection</div>', unsafe_allow_html=True)
@@ -566,7 +556,7 @@ with col1:
                 value=3,
                 key="num_elements"
             )
-            
+           
             # Show/Hide periodic table button
             show_hide_col1, show_hide_col2 = st.columns([3, 1])
             with show_hide_col2:
@@ -575,8 +565,8 @@ with col1:
                 if st.button(button_label, key="toggle_table", type=button_type):
                     st.session_state.show_periodic_table = not st.session_state.show_periodic_table
                     st.rerun()
-            
-            # Periodic Table (with empty cells replaced by non-breaking space)
+           
+            # Periodic Table
             if st.session_state.show_periodic_table:
                 st.markdown('<div class="glass-card">', unsafe_allow_html=True)
                 for row_idx, row in PERIODIC_TABLE.items():
@@ -604,16 +594,15 @@ with col1:
                                     st.rerun()
                         else:
                             with cols[col_idx]:
-                                # Use non-breaking space to avoid empty string
-                                st.markdown("&nbsp;")
+                                st.write("")
                 st.markdown('</div>', unsafe_allow_html=True)
-            
+           
             # Manual Input Toggle
             if not st.session_state.show_manual_input:
                 if st.button("📝 Manual Input", key="toggle_manual", use_container_width=True, type="secondary"):
                     st.session_state.show_manual_input = True
                     st.rerun()
-            
+           
             # ---- MANUAL INPUT CARD (merged with sliders when open) ----
             if st.session_state.show_manual_input:
                 st.markdown('<div class="glass-card">', unsafe_allow_html=True)
@@ -632,7 +621,7 @@ with col1:
                     • Fe40Ni40P14B6 (Fe 40%, Ni 40%, P 14%, B 6%)
                 </div>
                 """, unsafe_allow_html=True)
-                
+               
                 if st.button("Apply & Predict", key="apply_composition", type="primary", use_container_width=True):
                     if comp_string:
                         elements, fractions = parse_composition_string(comp_string)
@@ -642,9 +631,8 @@ with col1:
                             st.session_state.locked_elements = []
                             st.session_state.show_manual_input = False
                             st.session_state.prediction_error = None
-                            # Enforce ASCII composition string
-                            composition = "".join([f"{elem}{int(st.session_state.element_fractions[elem])}" 
-                                                 for elem in st.session_state.selected_elements]).encode('ascii', 'ignore').decode()
+                            composition = "".join([f"{elem}{int(st.session_state.element_fractions[elem])}"
+                                                 for elem in st.session_state.selected_elements])
                             with st.spinner("Analyzing alloy composition..."):
                                 st.session_state.predictions = process_single_alloy(composition)
                                 if st.session_state.predictions:
@@ -654,16 +642,16 @@ with col1:
                             st.error("Invalid format. Use format like Cu50Zr50")
                     else:
                         st.warning("Please enter a composition string")
-                
+               
                 # If there are selected elements, show the sliders inside this same card
                 if st.session_state.selected_elements:
                     st.markdown("---")
                     st.markdown("#### Adjust Composition")
-                    
+                   
                     total = sum(st.session_state.element_fractions.get(elem, 0) for elem in st.session_state.selected_elements)
                     if abs(total - 100) > 0.1:
                         auto_adjust_composition()
-                    
+                   
                     for elem in st.session_state.selected_elements:
                         current_val = st.session_state.element_fractions.get(elem, 100/len(st.session_state.selected_elements))
                         col_left, col_mid, col_right = st.columns([3, 1, 1])
@@ -689,8 +677,7 @@ with col1:
                             )
                         with col_right:
                             is_locked = elem in st.session_state.locked_elements
-                            # Replace emoji with text
-                            lock_icon = "Unlock" if is_locked else "Lock"
+                            lock_icon = "🔓" if is_locked else "🔒"
                             lock_tooltip = "Unlock to edit" if is_locked else "Lock this value"
                             max_lockable = len(st.session_state.selected_elements) - 2
                             can_lock = len(st.session_state.locked_elements) < max_lockable or is_locked
@@ -706,17 +693,17 @@ with col1:
                                     st.session_state.locked_elements.append(elem)
                                 auto_adjust_composition()
                                 st.rerun()
-                    
+                   
                     total = sum(st.session_state.element_fractions.get(elem, 0) for elem in st.session_state.selected_elements)
                     st.progress(total/100, text=f"Total: {total:.1f}%")
-                    
+                   
                     if abs(total - 100) <= 0.1:
                         st.markdown('<div class="success-text">✓ Valid</div>', unsafe_allow_html=True)
                     else:
                         st.markdown(f'<div class="warning-text">⚠️ Adjusting...</div>', unsafe_allow_html=True)
                         auto_adjust_composition()
                         st.rerun()
-                    
+                   
                     if len(st.session_state.selected_elements) > 1:
                         st.markdown('<div style="margin-top: 1rem;">', unsafe_allow_html=True)
                         fig_pie = create_composition_pie(
@@ -725,29 +712,28 @@ with col1:
                         )
                         st.plotly_chart(fig_pie, use_container_width=True, config={'displayModeBar': False})
                         st.markdown('</div>', unsafe_allow_html=True)
-                    
+                   
                     if st.button("🚀 Predict Properties", use_container_width=True, type="primary"):
-                        # Enforce ASCII composition string
-                        composition = "".join([f"{elem}{int(st.session_state.element_fractions[elem])}" 
-                                             for elem in st.session_state.selected_elements]).encode('ascii', 'ignore').decode()
+                        composition = "".join([f"{elem}{int(st.session_state.element_fractions[elem])}"
+                                             for elem in st.session_state.selected_elements])
                         st.session_state.prediction_error = None
                         with st.spinner("Analyzing alloy composition..."):
                             st.session_state.predictions = process_single_alloy(composition)
                             if st.session_state.predictions:
                                 st.session_state.show_periodic_table = False
                             st.rerun()
-                
-                st.markdown('</div>', unsafe_allow_html=True)  # close manual input card
-            
+               
+                st.markdown('</div>', unsafe_allow_html=True) # close manual input card
+           
             # ---- IF MANUAL INPUT IS CLOSED and there are selected elements, show the separate composition card ----
             if not st.session_state.show_manual_input and st.session_state.selected_elements:
                 st.markdown('<div class="section-title">Composition</div>', unsafe_allow_html=True)
                 st.markdown('<div class="glass-card">', unsafe_allow_html=True)
-                
+               
                 total = sum(st.session_state.element_fractions.get(elem, 0) for elem in st.session_state.selected_elements)
                 if abs(total - 100) > 0.1:
                     auto_adjust_composition()
-                
+               
                 for elem in st.session_state.selected_elements:
                     current_val = st.session_state.element_fractions.get(elem, 100/len(st.session_state.selected_elements))
                     col_left, col_mid, col_right = st.columns([3, 1, 1])
@@ -773,8 +759,7 @@ with col1:
                         )
                     with col_right:
                         is_locked = elem in st.session_state.locked_elements
-                        # Replace emoji with text
-                        lock_icon = "Unlock" if is_locked else "Lock"
+                        lock_icon = "🔓" if is_locked else "🔒"
                         lock_tooltip = "Unlock to edit" if is_locked else "Lock this value"
                         max_lockable = len(st.session_state.selected_elements) - 2
                         can_lock = len(st.session_state.locked_elements) < max_lockable or is_locked
@@ -790,17 +775,17 @@ with col1:
                                 st.session_state.locked_elements.append(elem)
                             auto_adjust_composition()
                             st.rerun()
-                
+               
                 total = sum(st.session_state.element_fractions.get(elem, 0) for elem in st.session_state.selected_elements)
                 st.progress(total/100, text=f"Total: {total:.1f}%")
-                
+               
                 if abs(total - 100) <= 0.1:
                     st.markdown('<div class="success-text">✓ Valid</div>', unsafe_allow_html=True)
                 else:
                     st.markdown(f'<div class="warning-text">⚠️ Adjusting...</div>', unsafe_allow_html=True)
                     auto_adjust_composition()
                     st.rerun()
-                
+               
                 if len(st.session_state.selected_elements) > 1:
                     st.markdown('<div style="margin-top: 1rem;">', unsafe_allow_html=True)
                     fig_pie = create_composition_pie(
@@ -809,21 +794,20 @@ with col1:
                     )
                     st.plotly_chart(fig_pie, use_container_width=True, config={'displayModeBar': False})
                     st.markdown('</div>', unsafe_allow_html=True)
-                
+               
                 if st.button("🚀 Predict Properties", use_container_width=True, type="primary"):
-                    # Enforce ASCII composition string
-                    composition = "".join([f"{elem}{int(st.session_state.element_fractions[elem])}" 
-                                         for elem in st.session_state.selected_elements]).encode('ascii', 'ignore').decode()
+                    composition = "".join([f"{elem}{int(st.session_state.element_fractions[elem])}"
+                                         for elem in st.session_state.selected_elements])
                     st.session_state.prediction_error = None
                     with st.spinner("Analyzing alloy composition..."):
                         st.session_state.predictions = process_single_alloy(composition)
                         if st.session_state.predictions:
                             st.session_state.show_periodic_table = False
                         st.rerun()
-                
+               
                 st.markdown('</div>', unsafe_allow_html=True)
-    
-    else:  # Batch CSV mode
+   
+    else: # Batch CSV mode
         st.markdown('<div class="section-title">Batch CSV Upload</div>', unsafe_allow_html=True)
         st.markdown('<div class="glass-card">', unsafe_allow_html=True)
         uploaded_file = st.file_uploader(
@@ -850,7 +834,6 @@ with col1:
             except Exception as e:
                 st.error(f"Error reading CSV: {e}")
         st.markdown('</div>', unsafe_allow_html=True)
-
 with col2:
     # Results display
     if mode == "Single Alloy":
@@ -894,16 +877,15 @@ with col2:
                 </div>
                 ''', unsafe_allow_html=True)
             st.markdown('</div>', unsafe_allow_html=True)
-            
+           
             st.markdown('<div class="section-title">Glass Forming Ability</div>', unsafe_allow_html=True)
             st.markdown('<div class="gauge-container">', unsafe_allow_html=True)
             fig_gauge = create_simple_gauge(pred['Predicted_Dmax'])
             st.plotly_chart(fig_gauge, use_container_width=True, config={'displayModeBar': False})
             st.markdown('</div>', unsafe_allow_html=True)
-            
-            # Enforce ASCII for download filename too (though it's already safe)
-            composition = "".join([f"{elem}{int(st.session_state.element_fractions[elem])}" 
-                                 for elem in st.session_state.selected_elements]).encode('ascii', 'ignore').decode()
+           
+            composition = "".join([f"{elem}{int(st.session_state.element_fractions[elem])}"
+                                 for elem in st.session_state.selected_elements])
             results_df = pd.DataFrame({
                 'Alloy': [composition],
                 'Phase': [pred['Predicted_Phase']],
@@ -916,7 +898,7 @@ with col2:
                 'Rc_Ks': [pred['Predicted_Rc']]
             })
             st.markdown(get_download_link(results_df), unsafe_allow_html=True)
-        
+       
         elif st.session_state.prediction_error is not None:
             st.markdown('<div class="section-title">Prediction Error</div>', unsafe_allow_html=True)
             st.markdown(f'''
@@ -945,8 +927,8 @@ with col2:
                 </div>
             </div>
             """, unsafe_allow_html=True)
-    
-    else:  # Batch CSV results
+   
+    else: # Batch CSV results
         if st.session_state.batch_results is not None:
             st.markdown('<div class="section-title">Batch Results</div>', unsafe_allow_html=True)
             st.markdown('<div class="glass-card">', unsafe_allow_html=True)
@@ -980,7 +962,6 @@ with col2:
                 </div>
             </div>
             """, unsafe_allow_html=True)
-
 st.markdown('</div>', unsafe_allow_html=True)
 st.markdown("""
 <div style="text-align: center; padding: 1.5rem; margin-top: 2rem; border-top: 1px solid rgba(255, 255, 255, 0.1);">
