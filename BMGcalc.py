@@ -5,7 +5,6 @@ import plotly.graph_objects as go
 import numpy as np
 import re
 import base64
-import html  # <-- added for escaping
 
 # Import the full pipeline
 from bmg_pipeline import ModularBMGPipeline
@@ -503,9 +502,8 @@ def process_batch_csv(uploaded_file):
 def get_download_link(df, filename="bmg_predictions.csv"):
     csv = df.to_csv(index=False)
     b64 = base64.b64encode(csv.encode()).decode()
-    safe_filename = html.escape(filename)
     href = f'''
-    <a href="data:file/csv;base64,{b64}" download="{safe_filename}" 
+    <a href="data:file/csv;base64,{b64}" download="{filename}" 
        style="background: linear-gradient(90deg, #10B981 0%, #059669 100%); 
               color: white; padding: 0.6rem 1.2rem; border-radius: 6px; 
               text-decoration: none; font-weight: 600; display: block; 
@@ -543,16 +541,14 @@ with col1:
         if st.session_state.predictions is not None:
             composition_str = "".join([f"{elem}{int(st.session_state.element_fractions[elem])}" 
                                       for elem in st.session_state.selected_elements])
-            safe_composition = html.escape(composition_str)
-            safe_elements = [html.escape(elem) for elem in st.session_state.selected_elements]
             st.markdown('<div class="section-title">Current Composition</div>', unsafe_allow_html=True)
             st.markdown(f'''
             <div class="compact-composition">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <span class="composition-string">{safe_composition}</span>
+                    <span class="composition-string">{composition_str}</span>
                 </div>
                 <div style="margin-top: 0.5rem; display: flex; flex-wrap: wrap; gap: 0.3rem;">
-                    {''.join([f'<span class="element-tag">{elem}</span>' for elem in safe_elements])}
+                    {''.join([f'<span class="element-tag">{elem}</span>' for elem in st.session_state.selected_elements])}
                 </div>
             </div>
             ''', unsafe_allow_html=True)
@@ -685,11 +681,8 @@ with col1:
                                 st.rerun()
                         with col_mid:
                             display_val = st.session_state.element_fractions.get(elem, 0)
-                            # FIX: format before escaping
-                            formatted_val = f"{display_val:.1f}"
-                            safe_val = html.escape(formatted_val)
                             st.markdown(
-                                f'<div style="color: #00B4DB; font-weight: 700; padding-top: 0.5rem;">{safe_val}%</div>',
+                                f'<div style="color: #00B4DB; font-weight: 700; padding-top: 0.5rem;">{display_val:.1f}%</div>',
                                 unsafe_allow_html=True
                             )
                         with col_right:
@@ -770,11 +763,8 @@ with col1:
                             st.rerun()
                     with col_mid:
                         display_val = st.session_state.element_fractions.get(elem, 0)
-                        # FIX: format before escaping
-                        formatted_val = f"{display_val:.1f}"
-                        safe_val = html.escape(formatted_val)
                         st.markdown(
-                            f'<div style="color: #00B4DB; font-weight: 700; padding-top: 0.5rem;">{safe_val}%</div>',
+                            f'<div style="color: #00B4DB; font-weight: 700; padding-top: 0.5rem;">{display_val:.1f}%</div>',
                             unsafe_allow_html=True
                         )
                     with col_right:
@@ -868,22 +858,19 @@ with col2:
             pred = st.session_state.predictions
             metric_cols = st.columns([1, 2])
             with metric_cols[0]:
-                delta_value = html.escape(str(pred['Predicted_Tx'] - pred['Predicted_Tg']))
                 st.markdown(f"""
                 <div class="metric-card">
                     <div class="metric-label">ΔT RANGE</div>
-                    <div class="metric-value">{delta_value}</div>
+                    <div class="metric-value">{pred['Predicted_Tx'] - pred['Predicted_Tg']:.0f}</div>
                     <div class="metric-sub">Tx - Tg (K)</div>
                 </div>
                 """, unsafe_allow_html=True)
             with metric_cols[1]:
-                phase_value = html.escape(pred['Predicted_Phase'])
-                confidence_value = html.escape(str(pred['Phase_Confidence']))
                 st.markdown(f"""
                 <div class="metric-card">
                     <div class="metric-label">PHASE</div>
-                    <div class="metric-value phase">{phase_value}</div>
-                    <div class="metric-sub">Confidence: {confidence_value}</div>
+                    <div class="metric-value phase">{pred['Predicted_Phase']}</div>
+                    <div class="metric-sub">Confidence: {pred['Phase_Confidence']:.1%}</div>
                 </div>
                 """, unsafe_allow_html=True)
             properties = [
@@ -894,12 +881,10 @@ with col2:
                 ("Critical Cooling Rate", f"{pred['Predicted_Rc']:.3f} K/s"),
             ]
             for name, value in properties:
-                safe_name = html.escape(name)
-                safe_value = html.escape(value)
                 st.markdown(f'''
                 <div class="property-row">
-                    <div class="property-label">{safe_name}</div>
-                    <div class="property-value">{safe_value}</div>
+                    <div class="property-label">{name}</div>
+                    <div class="property-value">{value}</div>
                 </div>
                 ''', unsafe_allow_html=True)
             st.markdown('</div>', unsafe_allow_html=True)
@@ -927,11 +912,10 @@ with col2:
         
         elif st.session_state.prediction_error is not None:
             st.markdown('<div class="section-title">Prediction Error</div>', unsafe_allow_html=True)
-            safe_error = html.escape(st.session_state.prediction_error)
             st.markdown(f'''
             <div class="error-message">
                 <div style="font-weight: 600; margin-bottom: 0.5rem;">❌ Prediction Failed</div>
-                <div style="font-size: 0.9rem;">{safe_error}</div>
+                <div style="font-size: 0.9rem;">{st.session_state.prediction_error}</div>
                 <div style="margin-top: 1rem; font-size: 0.85rem; color: #FCA5A5;">
                     Please check your composition and try again.
                 </div>
@@ -964,11 +948,10 @@ with col2:
             st.markdown('</div>', unsafe_allow_html=True)
         elif st.session_state.batch_error is not None:
             st.markdown('<div class="section-title">Batch Processing Error</div>', unsafe_allow_html=True)
-            safe_error = html.escape(st.session_state.batch_error)
             st.markdown(f'''
             <div class="error-message">
                 <div style="font-weight: 600; margin-bottom: 0.5rem;">❌ Batch Processing Failed</div>
-                <div style="font-size: 0.9rem;">{safe_error}</div>
+                <div style="font-size: 0.9rem;">{st.session_state.batch_error}</div>
                 <div style="margin-top: 1rem; font-size: 0.85rem; color: #FCA5A5;">
                     Please check your CSV file and try again.
                 </div>
