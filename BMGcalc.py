@@ -5,6 +5,7 @@ import plotly.graph_objects as go
 import numpy as np
 import re
 import base64
+import html
 
 # Import the full pipeline
 from bmg_pipeline import ModularBMGPipeline
