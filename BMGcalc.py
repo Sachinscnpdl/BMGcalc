@@ -12,10 +12,14 @@ from bmg_pipeline import ModularBMGPipeline
 # Page configuration
 st.set_page_config(
     page_title="BMGcalc - Metallic Glass Predictor",
-    page_icon="⚗️",
+    page_icon="⚗️",  # page_icon can stay, Streamlit handles it separately
     layout="wide",
     initial_sidebar_state="collapsed"
 )
+
+# Helper to produce safe keys for widgets (ASCII only)
+def safe_key(s):
+    return re.sub(r'[^0-9A-Za-z_]', '_', str(s))
 
 # Custom CSS – improved contrast for results and examples
 st.markdown("""
@@ -94,7 +98,6 @@ st.markdown("""
         box-shadow: 0 4px 12px rgba(0, 180, 219, 0.4);
     }
     
-    /* METRIC CARDS – deeper cyan for values, darker labels */
     .metric-card {
         background: linear-gradient(135deg, rgba(0, 180, 219, 0.1), rgba(0, 131, 176, 0.1));
         border: 1px solid rgba(0, 180, 219, 0.3);
@@ -114,7 +117,7 @@ st.markdown("""
     }
     
     .metric-label {
-        color: #94A3B8;              /* darker gray */
+        color: #94A3B8;
         font-size: 0.75rem;
         font-weight: 600;
         text-transform: uppercase;
@@ -123,7 +126,7 @@ st.markdown("""
     }
     
     .metric-value {
-        color: #00B4DB;               /* deeper cyan */
+        color: #00B4DB;
         font-size: 2rem;
         font-weight: 800;
         font-family: 'Space Grotesk', sans-serif;
@@ -137,13 +140,12 @@ st.markdown("""
     }
     
     .metric-sub {
-        color: #64748B;                /* darker than before */
+        color: #64748B;
         font-size: 0.7rem;
         margin-top: 0.3rem;
         font-weight: 500;
     }
     
-    /* PROPERTY ROWS – darker labels and deeper cyan values */
     .property-row {
         display: flex;
         justify-content: space-between;
@@ -166,19 +168,18 @@ st.markdown("""
     }
     
     .property-label {
-        color: #A0AEC0;               /* darker, more muted */
+        color: #A0AEC0;
         font-size: 0.9rem;
         font-weight: 500;
     }
     
     .property-value {
-        color: #00B4DB;               /* deeper cyan */
+        color: #00B4DB;
         font-size: 0.95rem;
         font-weight: 700;
         font-family: 'Space Grotesk', sans-serif;
     }
     
-    /* Compact composition display */
     .compact-composition {
         background: rgba(30, 41, 59, 0.5);
         border: 1px solid rgba(0, 180, 219, 0.2);
@@ -247,15 +248,14 @@ st.markdown("""
         font-weight: 600 !important;
     }
     
-    /* EXAMPLES BOX – improved contrast */
     .examples-box {
-        background: #1F2A3A;          /* darker background */
-        border: 1px solid #2D3A4A;    /* subtle border */
+        background: #1F2A3A;
+        border: 1px solid #2D3A4A;
         border-radius: 6px;
         padding: 0.6rem;
         margin: 0.5rem 0;
         font-size: 0.75rem;
-        color: #E0E0E0;                /* brighter text */
+        color: #E0E0E0;
         line-height: 1.5;
     }
     
@@ -424,7 +424,7 @@ def auto_adjust_composition():
         equal_share = remaining / len(unlocked)
         for elem in unlocked:
             st.session_state.element_fractions[elem] = equal_share
-    elif remaining > 0:
+    elif remaining > 0 and locked:
         equal_share = remaining / len(locked)
         for elem in locked:
             st.session_state.element_fractions[elem] += equal_share
@@ -508,7 +508,7 @@ def get_download_link(df, filename="bmg_predictions.csv"):
               color: white; padding: 0.6rem 1.2rem; border-radius: 6px; 
               text-decoration: none; font-weight: 600; display: block; 
               text-align: center; font-size: 0.9rem;">
-        📥 Download Results
+        Download Results
     </a>
     '''
     return href
@@ -516,10 +516,10 @@ def get_download_link(df, filename="bmg_predictions.csv"):
 # MAIN APP
 header_col1, header_col2 = st.columns([6, 1])
 with header_col1:
-    st.markdown('<div class="main-header">⚗️ BMGcalc - Metallic Glass Predictor</div>', unsafe_allow_html=True)
+    st.markdown('<div class="main-header">BMGcalc - Metallic Glass Predictor</div>', unsafe_allow_html=True)
 with header_col2:
     st.markdown('<div style="margin-top: 1.5rem;">', unsafe_allow_html=True)
-    if st.button("🔄 Reset", key="reset_button", use_container_width=True):
+    if st.button("Reset", key="reset_button", use_container_width=True):
         reset_app()
         st.rerun()
     st.markdown('</div>', unsafe_allow_html=True)
@@ -552,7 +552,7 @@ with col1:
                 </div>
             </div>
             ''', unsafe_allow_html=True)
-            if st.button("✏️ Edit Composition", use_container_width=True, type="secondary"):
+            if st.button("Edit Composition", use_container_width=True, type="secondary"):
                 st.session_state.predictions = None
                 st.session_state.show_periodic_table = True
                 st.rerun()
@@ -570,7 +570,7 @@ with col1:
             # Show/Hide periodic table button
             show_hide_col1, show_hide_col2 = st.columns([3, 1])
             with show_hide_col2:
-                button_label = "🔽 Hide Table" if st.session_state.show_periodic_table else "🔼 Show Table"
+                button_label = "Hide Table" if st.session_state.show_periodic_table else "Show Table"
                 button_type = "secondary" if st.session_state.show_periodic_table else "primary"
                 if st.button(button_label, key="toggle_table", type=button_type):
                     st.session_state.show_periodic_table = not st.session_state.show_periodic_table
@@ -585,9 +585,11 @@ with col1:
                         if element:
                             with cols[col_idx]:
                                 is_selected = element in st.session_state.selected_elements
+                                safe_elem = safe_key(element)
+                                btn_key = f"btn_{safe_elem}_{row_idx}_{col_idx}"
                                 if st.button(
                                     element,
-                                    key=f"btn_{element}_{row_idx}_{col_idx}",
+                                    key=btn_key,
                                     type="primary" if is_selected else "secondary",
                                     use_container_width=True
                                 ):
@@ -609,7 +611,7 @@ with col1:
             
             # Manual Input Toggle
             if not st.session_state.show_manual_input:
-                if st.button("📝 Manual Input", key="toggle_manual", use_container_width=True, type="secondary"):
+                if st.button("Manual Input", key="toggle_manual", use_container_width=True, type="secondary"):
                     st.session_state.show_manual_input = True
                     st.rerun()
             
@@ -626,9 +628,9 @@ with col1:
                 st.markdown("""
                 <div class="examples-box">
                     <strong>Examples:</strong><br>
-                    • Cu50Zr50 (Cu 50%, Zr 50%)<br>
-                    • Cu50Zr25Al25 (Cu 50%, Zr 25%, Al 25%)<br>
-                    • Fe40Ni40P14B6 (Fe 40%, Ni 40%, P 14%, B 6%)
+                    - Cu50Zr50 (Cu 50%, Zr 50%)<br>
+                    - Cu50Zr25Al25 (Cu 50%, Zr 25%, Al 25%)<br>
+                    - Fe40Ni40P14B6 (Fe 40%, Ni 40%, P 14%, B 6%)
                 </div>
                 """, unsafe_allow_html=True)
                 
@@ -667,13 +669,14 @@ with col1:
                         col_left, col_mid, col_right = st.columns([3, 1, 1])
                         with col_left:
                             is_locked = elem in st.session_state.locked_elements
+                            safe_elem = safe_key(elem)
                             new_val = st.slider(
                                 elem,
                                 min_value=0.0,
                                 max_value=100.0,
                                 value=float(current_val),
                                 step=0.5,
-                                key=f"slider_{elem}",
+                                key=f"slider_{safe_elem}",
                                 disabled=is_locked
                             )
                             if abs(new_val - current_val) > 0.01:
@@ -687,13 +690,14 @@ with col1:
                             )
                         with col_right:
                             is_locked = elem in st.session_state.locked_elements
-                            lock_icon = "🔓" if is_locked else "🔒"
+                            lock_label = "Unlock" if is_locked else "Lock"
                             lock_tooltip = "Unlock to edit" if is_locked else "Lock this value"
                             max_lockable = len(st.session_state.selected_elements) - 2
                             can_lock = len(st.session_state.locked_elements) < max_lockable or is_locked
+                            btn_key = f"lock_{safe_elem}"
                             if st.button(
-                                lock_icon,
-                                key=f"lock_{elem}",
+                                lock_label,
+                                key=btn_key,
                                 help=lock_tooltip,
                                 disabled=(not can_lock and not is_locked)
                             ):
@@ -708,9 +712,9 @@ with col1:
                     st.progress(total/100, text=f"Total: {total:.1f}%")
                     
                     if abs(total - 100) <= 0.1:
-                        st.markdown('<div class="success-text">✓ Valid</div>', unsafe_allow_html=True)
+                        st.markdown('<div class="success-text">Valid</div>', unsafe_allow_html=True)
                     else:
-                        st.markdown(f'<div class="warning-text">⚠️ Adjusting...</div>', unsafe_allow_html=True)
+                        st.markdown(f'<div class="warning-text">Adjusting...</div>', unsafe_allow_html=True)
                         auto_adjust_composition()
                         st.rerun()
                     
@@ -723,7 +727,7 @@ with col1:
                         st.plotly_chart(fig_pie, use_container_width=True, config={'displayModeBar': False})
                         st.markdown('</div>', unsafe_allow_html=True)
                     
-                    if st.button("🚀 Predict Properties", use_container_width=True, type="primary"):
+                    if st.button("Predict Properties", use_container_width=True, type="primary"):
                         composition = "".join([f"{elem}{int(st.session_state.element_fractions[elem])}" 
                                              for elem in st.session_state.selected_elements])
                         st.session_state.prediction_error = None
@@ -749,13 +753,14 @@ with col1:
                     col_left, col_mid, col_right = st.columns([3, 1, 1])
                     with col_left:
                         is_locked = elem in st.session_state.locked_elements
+                        safe_elem = safe_key(elem)
                         new_val = st.slider(
                             elem,
                             min_value=0.0,
                             max_value=100.0,
                             value=float(current_val),
                             step=0.5,
-                            key=f"slider_{elem}",
+                            key=f"slider_{safe_elem}",
                             disabled=is_locked
                         )
                         if abs(new_val - current_val) > 0.01:
@@ -769,13 +774,14 @@ with col1:
                         )
                     with col_right:
                         is_locked = elem in st.session_state.locked_elements
-                        lock_icon = "🔓" if is_locked else "🔒"
+                        lock_label = "Unlock" if is_locked else "Lock"
                         lock_tooltip = "Unlock to edit" if is_locked else "Lock this value"
                         max_lockable = len(st.session_state.selected_elements) - 2
                         can_lock = len(st.session_state.locked_elements) < max_lockable or is_locked
+                        btn_key = f"lock_{safe_elem}"
                         if st.button(
-                            lock_icon,
-                            key=f"lock_{elem}",
+                            lock_label,
+                            key=btn_key,
                             help=lock_tooltip,
                             disabled=(not can_lock and not is_locked)
                         ):
@@ -790,9 +796,9 @@ with col1:
                 st.progress(total/100, text=f"Total: {total:.1f}%")
                 
                 if abs(total - 100) <= 0.1:
-                    st.markdown('<div class="success-text">✓ Valid</div>', unsafe_allow_html=True)
+                    st.markdown('<div class="success-text">Valid</div>', unsafe_allow_html=True)
                 else:
-                    st.markdown(f'<div class="warning-text">⚠️ Adjusting...</div>', unsafe_allow_html=True)
+                    st.markdown(f'<div class="warning-text">Adjusting...</div>', unsafe_allow_html=True)
                     auto_adjust_composition()
                     st.rerun()
                 
@@ -805,7 +811,7 @@ with col1:
                     st.plotly_chart(fig_pie, use_container_width=True, config={'displayModeBar': False})
                     st.markdown('</div>', unsafe_allow_html=True)
                 
-                if st.button("🚀 Predict Properties", use_container_width=True, type="primary"):
+                if st.button("Predict Properties", use_container_width=True, type="primary"):
                     composition = "".join([f"{elem}{int(st.session_state.element_fractions[elem])}" 
                                          for elem in st.session_state.selected_elements])
                     st.session_state.prediction_error = None
@@ -833,7 +839,7 @@ with col1:
                 if 'Alloys' not in df_preview.columns:
                     st.error("The uploaded CSV does not contain an 'Alloys' column.")
                 else:
-                    if st.button("🚀 Run Batch Prediction", use_container_width=True, type="primary"):
+                    if st.button("Run Batch Prediction", use_container_width=True, type="primary"):
                         st.session_state.batch_error = None
                         with st.spinner("Processing batch... This may take a while."):
                             uploaded_file.seek(0)
@@ -851,7 +857,7 @@ with col2:
         if st.session_state.predictions is not None:
             st.markdown('<div class="section-title">Prediction Results</div>', unsafe_allow_html=True)
             if not st.session_state.show_periodic_table:
-                if st.button("📋 Show Periodic Table", key="show_table_results", type="secondary"):
+                if st.button("Show Periodic Table", key="show_table_results", type="secondary"):
                     st.session_state.show_periodic_table = True
                     st.rerun()
             st.markdown('<div class="glass-card">', unsafe_allow_html=True)
@@ -914,14 +920,14 @@ with col2:
             st.markdown('<div class="section-title">Prediction Error</div>', unsafe_allow_html=True)
             st.markdown(f'''
             <div class="error-message">
-                <div style="font-weight: 600; margin-bottom: 0.5rem;">❌ Prediction Failed</div>
+                <div style="font-weight: 600; margin-bottom: 0.5rem;">Prediction Failed</div>
                 <div style="font-size: 0.9rem;">{st.session_state.prediction_error}</div>
                 <div style="margin-top: 1rem; font-size: 0.85rem; color: #FCA5A5;">
                     Please check your composition and try again.
                 </div>
             </div>
             ''', unsafe_allow_html=True)
-            if st.button("🔄 Try Again", use_container_width=True, type="secondary"):
+            if st.button("Try Again", use_container_width=True, type="secondary"):
                 st.session_state.prediction_error = None
                 st.session_state.predictions = None
                 st.rerun()
@@ -929,7 +935,7 @@ with col2:
             st.markdown('<div class="section-title">Prediction Panel</div>', unsafe_allow_html=True)
             st.markdown("""
             <div class="glass-card" style="text-align: center; padding: 2rem 1.5rem;">
-                <div style="font-size: 2.5rem; color: #00B4DB; margin-bottom: 0.8rem;">⚗️</div>
+                <div style="font-size: 2.5rem; color: #00B4DB; margin-bottom: 0.8rem;"> </div>
                 <div style="color: #FFFFFF; font-size: 1.2rem; font-weight: 700; margin-bottom: 0.5rem; font-family: 'Space Grotesk', sans-serif;">
                     READY FOR ANALYSIS
                 </div>
@@ -950,21 +956,21 @@ with col2:
             st.markdown('<div class="section-title">Batch Processing Error</div>', unsafe_allow_html=True)
             st.markdown(f'''
             <div class="error-message">
-                <div style="font-weight: 600; margin-bottom: 0.5rem;">❌ Batch Processing Failed</div>
+                <div style="font-weight: 600; margin-bottom: 0.5rem;">Batch Processing Failed</div>
                 <div style="font-size: 0.9rem;">{st.session_state.batch_error}</div>
                 <div style="margin-top: 1rem; font-size: 0.85rem; color: #FCA5A5;">
                     Please check your CSV file and try again.
                 </div>
             </div>
             ''', unsafe_allow_html=True)
-            if st.button("🔄 Clear Error", use_container_width=True, type="secondary"):
+            if st.button("Clear Error", use_container_width=True, type="secondary"):
                 st.session_state.batch_error = None
                 st.rerun()
         else:
             st.markdown('<div class="section-title">Batch Panel</div>', unsafe_allow_html=True)
             st.markdown("""
             <div class="glass-card" style="text-align: center; padding: 2rem 1.5rem;">
-                <div style="font-size: 2.5rem; color: #00B4DB; margin-bottom: 0.8rem;">📁</div>
+                <div style="font-size: 2.5rem; color: #00B4DB; margin-bottom: 0.8rem;"> </div>
                 <div style="color: #FFFFFF; font-size: 1.2rem; font-weight: 700; margin-bottom: 0.5rem; font-family: 'Space Grotesk', sans-serif;">
                     UPLOAD A CSV FILE
                 </div>
