@@ -1,3 +1,4 @@
+# bmg_app_fixed.py
 # Authored by Sachin Poudel, Silesian University, Poland
 import streamlit as st
 import pandas as pd
@@ -6,7 +7,7 @@ import numpy as np
 import re
 import base64
 
-# Import the full pipeline
+# Import the full pipeline (keeps the same API as your original)
 from bmg_pipeline import ModularBMGPipeline
 
 # Page configuration
@@ -17,269 +18,254 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Custom CSS – improved contrast for results and examples
-st.markdown("""
+# Clean ASCII-only CSS
+st.markdown(r"""
 <style>
-    /* Main Styles */
-    .main-header {
-        background: linear-gradient(90deg, #0F172A 0%, #1E293B 100%);
-        padding: 1.5rem 2rem;
-        border-radius: 12px;
-        margin-bottom: 2rem;
-        text-align: center;
-        color: white;
-        font-size: 2rem;
-        font-weight: 700;
-        letter-spacing: -0.02em;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-        border: 1px solid rgba(0, 180, 219, 0.2);
-        font-family: 'Space Grotesk', sans-serif;
-        position: relative;
-    }
-    
-    .reset-btn-container {
-        position: absolute;
-        top: 1rem;
-        right: 2rem;
-    }
-    
-    .main-container {
-        max-width: 100% !important;
-        width: 100% !important;
-        padding: 0 1rem;
-    }
-    
-    .glass-card {
-        background: rgba(30, 41, 59, 0.8);
-        border: 1px solid rgba(0, 180, 219, 0.2);
-        border-radius: 12px;
-        padding: 1.5rem;
-        margin-bottom: 1.5rem;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-        backdrop-filter: blur(10px);
-        transition: all 0.3s ease;
-    }
-    
-    .glass-card:hover {
-        border-color: rgba(0, 180, 219, 0.4);
-        box-shadow: 0 12px 40px rgba(0, 180, 219, 0.15);
-    }
-    
-    .section-title {
-        color: #00B4DB;
-        font-size: 1.1rem;
-        font-weight: 700;
-        margin-bottom: 1rem;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        font-family: 'Space Grotesk', sans-serif;
-    }
-    
-    .element-tag {
-        background: linear-gradient(90deg, #00B4DB, #0083B0);
-        color: white;
-        padding: 0.3rem 0.6rem;
-        border-radius: 6px;
-        font-size: 0.85rem;
-        font-weight: 600;
-        display: inline-block;
-        margin: 0.2rem;
-        box-shadow: 0 2px 8px rgba(0, 180, 219, 0.3);
-        transition: all 0.2s ease;
-    }
-    
-    .element-tag:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0, 180, 219, 0.4);
-    }
-    
-    /* METRIC CARDS – deeper cyan for values, darker labels */
-    .metric-card {
-        background: linear-gradient(135deg, rgba(0, 180, 219, 0.1), rgba(0, 131, 176, 0.1));
-        border: 1px solid rgba(0, 180, 219, 0.3);
-        border-radius: 10px;
-        padding: 1rem;
-        text-align: center;
-        transition: all 0.3s ease;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-    }
-    
-    .metric-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 8px 25px rgba(0, 180, 219, 0.2);
-    }
-    
-    .metric-label {
-        color: #94A3B8;              /* darker gray */
-        font-size: 0.75rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        margin-bottom: 0.5rem;
-    }
-    
-    .metric-value {
-        color: #00B4DB;               /* deeper cyan */
-        font-size: 2rem;
-        font-weight: 800;
-        font-family: 'Space Grotesk', sans-serif;
-        line-height: 1.2;
-        text-shadow: 0 0 8px rgba(0, 180, 219, 0.3);
-    }
-    
-    .metric-value.phase {
-        font-size: 2.5rem;
-        font-weight: 900;
-    }
-    
-    .metric-sub {
-        color: #64748B;                /* darker than before */
-        font-size: 0.7rem;
-        margin-top: 0.3rem;
-        font-weight: 500;
-    }
-    
-    /* PROPERTY ROWS – darker labels and deeper cyan values */
-    .property-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 0.75rem 0;
-        border-bottom: 1px solid rgba(0, 180, 219, 0.1);
-        transition: all 0.2s ease;
-    }
-    
-    .property-row:hover {
-        background: rgba(0, 180, 219, 0.05);
-        padding-left: 0.5rem;
-        padding-right: 0.5rem;
-        margin: 0 -0.5rem;
-        border-radius: 6px;
-    }
-    
-    .property-row:last-child {
-        border-bottom: none;
-    }
-    
-    .property-label {
-        color: #A0AEC0;               /* darker, more muted */
-        font-size: 0.9rem;
-        font-weight: 500;
-    }
-    
-    .property-value {
-        color: #00B4DB;               /* deeper cyan */
-        font-size: 0.95rem;
-        font-weight: 700;
-        font-family: 'Space Grotesk', sans-serif;
-    }
-    
-    /* Compact composition display */
-    .compact-composition {
-        background: rgba(30, 41, 59, 0.5);
-        border: 1px solid rgba(0, 180, 219, 0.2);
-        border-radius: 8px;
-        padding: 1rem;
-        margin-bottom: 1rem;
-    }
-    
-    .composition-string {
-        font-family: 'Space Grotesk', monospace;
-        font-size: 1.2rem;
-        font-weight: 600;
-        color: #00B4DB;
-        letter-spacing: 0.5px;
-    }
-    
-    .gauge-container {
-        background: rgba(30, 41, 59, 0.9);
-        border: 1px solid rgba(0, 180, 219, 0.3);
-        border-radius: 12px;
-        padding: 1.5rem;
-        margin-bottom: 1.5rem;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-    }
-    
-    .stButton > button {
-        background: linear-gradient(90deg, #00B4DB, #0083B0);
-        color: white;
-        border: none;
-        border-radius: 8px;
-        font-weight: 600;
-        padding: 0.6rem 1.2rem;
-        transition: all 0.3s ease;
-        font-family: 'Inter', sans-serif;
-    }
-    
-    .stButton > button:hover {
-        background: linear-gradient(90deg, #0083B0, #006994);
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(0, 180, 219, 0.3);
-    }
-    
-    .stButton > button:active {
-        transform: translateY(0);
-    }
-    
-    .stSlider {
-        margin-bottom: 1rem;
-    }
-    
-    .stSlider > div > div > div {
-        background: linear-gradient(90deg, #00B4DB, #0083B0) !important;
-    }
-    
-    .stProgress > div > div {
-        background: linear-gradient(90deg, #00B4DB, #0083B0);
-    }
-    
-    .warning-text {
-        color: #F87171 !important;
-        font-weight: 600 !important;
-    }
-    
-    .success-text {
-        color: #4ADE80 !important;
-        font-weight: 600 !important;
-    }
-    
-    /* EXAMPLES BOX – improved contrast */
-    .examples-box {
-        background: #1F2A3A;          /* darker background */
-        border: 1px solid #2D3A4A;    /* subtle border */
-        border-radius: 6px;
-        padding: 0.6rem;
-        margin: 0.5rem 0;
-        font-size: 0.75rem;
-        color: #E0E0E0;                /* brighter text */
-        line-height: 1.5;
-    }
-    
-    .stTextInput > div > div > input {
-        background: rgba(30, 41, 59, 0.7) !important;
-        border: 1px solid rgba(0, 180, 219, 0.3) !important;
-        color: white !important;
-        border-radius: 6px;
-        padding: 0.5rem 0.75rem !important;
-    }
-    
-    .stTextInput > div > div > input:focus {
-        border-color: #00B4DB !important;
-        box-shadow: 0 0 0 2px rgba(0, 180, 219, 0.2) !important;
-    }
-    
-    .error-message {
-        background: rgba(239, 68, 68, 0.1);
-        border: 1px solid rgba(239, 68, 68, 0.3);
-        border-radius: 8px;
-        padding: 1rem;
-        color: #F87171;
-        margin: 1rem 0;
-    }
+/* Main Styles */
+.main-header {
+    background: linear-gradient(90deg, #0F172A 0%, #1E293B 100%);
+    padding: 1.5rem 2rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+    text-align: center;
+    color: white;
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(0, 180, 219, 0.2);
+    font-family: 'Space Grotesk', sans-serif;
+    position: relative;
+}
+
+.reset-btn-container {
+    position: absolute;
+    top: 1rem;
+    right: 2rem;
+}
+
+.main-container {
+    max-width: 100% !important;
+    width: 100% !important;
+    padding: 0 1rem;
+}
+
+.glass-card {
+    background: rgba(30, 41, 59, 0.8);
+    border: 1px solid rgba(0, 180, 219, 0.2);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+}
+
+.glass-card:hover {
+    border-color: rgba(0, 180, 219, 0.4);
+    box-shadow: 0 12px 40px rgba(0, 180, 219, 0.15);
+}
+
+/* Section title and tags */
+.section-title {
+    color: #00B4DB;
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: 'Space Grotesk', sans-serif;
+}
+
+.element-tag {
+    background: linear-gradient(90deg, #00B4DB, #0083B0);
+    color: white;
+    padding: 0.3rem 0.6rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: inline-block;
+    margin: 0.2rem;
+    box-shadow: 0 2px 8px rgba(0, 180, 219, 0.3);
+    transition: all 0.2s ease;
+}
+
+.element-tag:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 180, 219, 0.4);
+}
+
+/* Metric cards */
+.metric-card {
+    background: linear-gradient(135deg, rgba(0, 180, 219, 0.1), rgba(0, 131, 176, 0.1));
+    border: 1px solid rgba(0, 180, 219, 0.3);
+    border-radius: 10px;
+    padding: 1rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.metric-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 180, 219, 0.2);
+}
+
+.metric-label {
+    color: #94A3B8;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.5rem;
+}
+
+.metric-value {
+    color: #00B4DB;
+    font-size: 2rem;
+    font-weight: 800;
+    font-family: 'Space Grotesk', sans-serif;
+    line-height: 1.2;
+    text-shadow: 0 0 8px rgba(0, 180, 219, 0.3);
+}
+
+.metric-value.phase {
+    font-size: 2.5rem;
+    font-weight: 900;
+}
+
+.metric-sub {
+    color: #64748B;
+    font-size: 0.7rem;
+    margin-top: 0.3rem;
+    font-weight: 500;
+}
+
+/* Property rows */
+.property-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid rgba(0, 180, 219, 0.1);
+    transition: all 0.2s ease;
+}
+
+.property-row:hover {
+    background: rgba(0, 180, 219, 0.05);
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    margin: 0 -0.5rem;
+    border-radius: 6px;
+}
+
+.property-row:last-child {
+    border-bottom: none;
+}
+
+.property-label {
+    color: #A0AEC0;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.property-value {
+    color: #00B4DB;
+    font-size: 0.95rem;
+    font-weight: 700;
+    font-family: 'Space Grotesk', sans-serif;
+}
+
+/* Compact composition */
+.compact-composition {
+    background: rgba(30, 41, 59, 0.5);
+    border: 1px solid rgba(0, 180, 219, 0.2);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.composition-string {
+    font-family: 'Space Grotesk', monospace;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #00B4DB;
+    letter-spacing: 0.5px;
+}
+
+/* Gauge container */
+.gauge-container {
+    background: rgba(30, 41, 59, 0.9);
+    border: 1px solid rgba(0, 180, 219, 0.3);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+/* Buttons and controls */
+.stButton > button {
+    background: linear-gradient(90deg, #00B4DB, #0083B0);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    padding: 0.6rem 1.2rem;
+    transition: all 0.3s ease;
+    font-family: Inter, sans-serif;
+}
+
+.stButton > button:hover {
+    background: linear-gradient(90deg, #0083B0, #006994);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 180, 219, 0.3);
+}
+
+.stButton > button:active {
+    transform: translateY(0);
+}
+
+.stSlider {
+    margin-bottom: 1rem;
+}
+
+/* Examples box */
+.examples-box {
+    background: #1F2A3A;
+    border: 1px solid #2D3A4A;
+    border-radius: 6px;
+    padding: 0.6rem;
+    margin: 0.5rem 0;
+    font-size: 0.75rem;
+    color: #E0E0E0;
+    line-height: 1.5;
+}
+
+.stTextInput > div > div > input {
+    background: rgba(30, 41, 59, 0.7) !important;
+    border: 1px solid rgba(0, 180, 219, 0.3) !important;
+    color: white !important;
+    border-radius: 6px;
+    padding: 0.5rem 0.75rem !important;
+}
+
+.stTextInput > div > div > input:focus {
+    border-color: #00B4DB !important;
+    box-shadow: 0 0 0 2px rgba(0, 180, 219, 0.2) !important;
+}
+
+.error-message {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 8px;
+    padding: 1rem;
+    color: #F87171;
+    margin: 1rem 0;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -502,24 +488,22 @@ def process_batch_csv(uploaded_file):
 def get_download_link(df, filename="bmg_predictions.csv"):
     csv = df.to_csv(index=False)
     b64 = base64.b64encode(csv.encode()).decode()
-    href = f'''
-    <a href="data:file/csv;base64,{b64}" download="{filename}" 
-       style="background: linear-gradient(90deg, #10B981 0%, #059669 100%); 
-              color: white; padding: 0.6rem 1.2rem; border-radius: 6px; 
-              text-decoration: none; font-weight: 600; display: block; 
-              text-align: center; font-size: 0.9rem;">
-        📥 Download Results
-    </a>
-    '''
+    href = (
+        f'<a href="data:text/csv;base64,{b64}" download="{filename}" '
+        'style="background:linear-gradient(90deg,#10B981 0%,#059669 100%);'
+        'color:white;padding:0.6rem 1.2rem;border-radius:6px;'
+        'text-decoration:none;font-weight:600;display:block;text-align:center;font-size:0.9rem;">'
+        'Download Results</a>'
+    )
     return href
 
 # MAIN APP
 header_col1, header_col2 = st.columns([6, 1])
 with header_col1:
-    st.markdown('<div class="main-header">⚗️ BMGcalc - Metallic Glass Predictor</div>', unsafe_allow_html=True)
+    st.markdown('<div class="main-header">BMGcalc - Metallic Glass Predictor</div>', unsafe_allow_html=True)
 with header_col2:
     st.markdown('<div style="margin-top: 1.5rem;">', unsafe_allow_html=True)
-    if st.button("🔄 Reset", key="reset_button", use_container_width=True):
+    if st.button("Reset", key="reset_button", use_container_width=True):
         reset_app()
         st.rerun()
     st.markdown('</div>', unsafe_allow_html=True)
@@ -552,7 +536,7 @@ with col1:
                 </div>
             </div>
             ''', unsafe_allow_html=True)
-            if st.button("✏️ Edit Composition", use_container_width=True, type="secondary"):
+            if st.button("Edit Composition", use_container_width=True, type="secondary"):
                 st.session_state.predictions = None
                 st.session_state.show_periodic_table = True
                 st.rerun()
@@ -570,7 +554,7 @@ with col1:
             # Show/Hide periodic table button
             show_hide_col1, show_hide_col2 = st.columns([3, 1])
             with show_hide_col2:
-                button_label = "🔽 Hide Table" if st.session_state.show_periodic_table else "🔼 Show Table"
+                button_label = "Hide Table" if st.session_state.show_periodic_table else "Show Table"
                 button_type = "secondary" if st.session_state.show_periodic_table else "primary"
                 if st.button(button_label, key="toggle_table", type=button_type):
                     st.session_state.show_periodic_table = not st.session_state.show_periodic_table
@@ -609,7 +593,7 @@ with col1:
             
             # Manual Input Toggle
             if not st.session_state.show_manual_input:
-                if st.button("📝 Manual Input", key="toggle_manual", use_container_width=True, type="secondary"):
+                if st.button("Manual Input", key="toggle_manual", use_container_width=True, type="secondary"):
                     st.session_state.show_manual_input = True
                     st.rerun()
             
@@ -626,9 +610,9 @@ with col1:
                 st.markdown("""
                 <div class="examples-box">
                     <strong>Examples:</strong><br>
-                    • Cu50Zr50 (Cu 50%, Zr 50%)<br>
-                    • Cu50Zr25Al25 (Cu 50%, Zr 25%, Al 25%)<br>
-                    • Fe40Ni40P14B6 (Fe 40%, Ni 40%, P 14%, B 6%)
+                    - Cu50Zr50 (Cu 50%, Zr 50%)<br>
+                    - Cu50Zr25Al25 (Cu 50%, Zr 25%, Al 25%)<br>
+                    - Fe40Ni40P14B6 (Fe 40%, Ni 40%, P 14%, B 6%)
                 </div>
                 """, unsafe_allow_html=True)
                 
@@ -687,7 +671,7 @@ with col1:
                             )
                         with col_right:
                             is_locked = elem in st.session_state.locked_elements
-                            lock_icon = "🔓" if is_locked else "🔒"
+                            lock_icon = "Unlock" if is_locked else "Lock"
                             lock_tooltip = "Unlock to edit" if is_locked else "Lock this value"
                             max_lockable = len(st.session_state.selected_elements) - 2
                             can_lock = len(st.session_state.locked_elements) < max_lockable or is_locked
@@ -705,12 +689,13 @@ with col1:
                                 st.rerun()
                     
                     total = sum(st.session_state.element_fractions.get(elem, 0) for elem in st.session_state.selected_elements)
-                    st.progress(total/100, text=f"Total: {total:.1f}%")
+                    st.progress(total/100)
+                    st.caption(f"Total: {total:.1f}%")
                     
                     if abs(total - 100) <= 0.1:
-                        st.markdown('<div class="success-text">✓ Valid</div>', unsafe_allow_html=True)
+                        st.markdown('<div class="success-text">Valid</div>', unsafe_allow_html=True)
                     else:
-                        st.markdown(f'<div class="warning-text">⚠️ Adjusting...</div>', unsafe_allow_html=True)
+                        st.markdown(f'<div class="warning-text">Adjusting...</div>', unsafe_allow_html=True)
                         auto_adjust_composition()
                         st.rerun()
                     
@@ -723,7 +708,7 @@ with col1:
                         st.plotly_chart(fig_pie, use_container_width=True, config={'displayModeBar': False})
                         st.markdown('</div>', unsafe_allow_html=True)
                     
-                    if st.button("🚀 Predict Properties", use_container_width=True, type="primary"):
+                    if st.button("Predict Properties", use_container_width=True, type="primary"):
                         composition = "".join([f"{elem}{int(st.session_state.element_fractions[elem])}" 
                                              for elem in st.session_state.selected_elements])
                         st.session_state.prediction_error = None
@@ -769,7 +754,7 @@ with col1:
                         )
                     with col_right:
                         is_locked = elem in st.session_state.locked_elements
-                        lock_icon = "🔓" if is_locked else "🔒"
+                        lock_icon = "Unlock" if is_locked else "Lock"
                         lock_tooltip = "Unlock to edit" if is_locked else "Lock this value"
                         max_lockable = len(st.session_state.selected_elements) - 2
                         can_lock = len(st.session_state.locked_elements) < max_lockable or is_locked
@@ -787,12 +772,13 @@ with col1:
                             st.rerun()
                 
                 total = sum(st.session_state.element_fractions.get(elem, 0) for elem in st.session_state.selected_elements)
-                st.progress(total/100, text=f"Total: {total:.1f}%")
+                st.progress(total/100)
+                st.caption(f"Total: {total:.1f}%")
                 
                 if abs(total - 100) <= 0.1:
-                    st.markdown('<div class="success-text">✓ Valid</div>', unsafe_allow_html=True)
+                    st.markdown('<div class="success-text">Valid</div>', unsafe_allow_html=True)
                 else:
-                    st.markdown(f'<div class="warning-text">⚠️ Adjusting...</div>', unsafe_allow_html=True)
+                    st.markdown(f'<div class="warning-text">Adjusting...</div>', unsafe_allow_html=True)
                     auto_adjust_composition()
                     st.rerun()
                 
@@ -805,7 +791,7 @@ with col1:
                     st.plotly_chart(fig_pie, use_container_width=True, config={'displayModeBar': False})
                     st.markdown('</div>', unsafe_allow_html=True)
                 
-                if st.button("🚀 Predict Properties", use_container_width=True, type="primary"):
+                if st.button("Predict Properties", use_container_width=True, type="primary"):
                     composition = "".join([f"{elem}{int(st.session_state.element_fractions[elem])}" 
                                          for elem in st.session_state.selected_elements])
                     st.session_state.prediction_error = None
@@ -833,9 +819,9 @@ with col1:
                 if 'Alloys' not in df_preview.columns:
                     st.error("The uploaded CSV does not contain an 'Alloys' column.")
                 else:
-                    if st.button("🚀 Run Batch Prediction", use_container_width=True, type="primary"):
+                    if st.button("Run Batch Prediction", use_container_width=True, type="primary"):
                         st.session_state.batch_error = None
-                        with st.spinner("Processing batch... This may take a while."):
+                        with st.spinner("Processing batch..."):
                             uploaded_file.seek(0)
                             result_df = process_batch_csv(uploaded_file)
                             if result_df is not None:
@@ -851,7 +837,7 @@ with col2:
         if st.session_state.predictions is not None:
             st.markdown('<div class="section-title">Prediction Results</div>', unsafe_allow_html=True)
             if not st.session_state.show_periodic_table:
-                if st.button("📋 Show Periodic Table", key="show_table_results", type="secondary"):
+                if st.button("Show Periodic Table", key="show_table_results", type="secondary"):
                     st.session_state.show_periodic_table = True
                     st.rerun()
             st.markdown('<div class="glass-card">', unsafe_allow_html=True)
@@ -860,7 +846,7 @@ with col2:
             with metric_cols[0]:
                 st.markdown(f"""
                 <div class="metric-card">
-                    <div class="metric-label">ΔT RANGE</div>
+                    <div class="metric-label">Delta T Range</div>
                     <div class="metric-value">{pred['Predicted_Tx'] - pred['Predicted_Tg']:.0f}</div>
                     <div class="metric-sub">Tx - Tg (K)</div>
                 </div>
@@ -868,7 +854,7 @@ with col2:
             with metric_cols[1]:
                 st.markdown(f"""
                 <div class="metric-card">
-                    <div class="metric-label">PHASE</div>
+                    <div class="metric-label">Phase</div>
                     <div class="metric-value phase">{pred['Predicted_Phase']}</div>
                     <div class="metric-sub">Confidence: {pred['Phase_Confidence']:.1%}</div>
                 </div>
@@ -914,14 +900,14 @@ with col2:
             st.markdown('<div class="section-title">Prediction Error</div>', unsafe_allow_html=True)
             st.markdown(f'''
             <div class="error-message">
-                <div style="font-weight: 600; margin-bottom: 0.5rem;">❌ Prediction Failed</div>
+                <div style="font-weight: 600; margin-bottom: 0.5rem;">Prediction Failed</div>
                 <div style="font-size: 0.9rem;">{st.session_state.prediction_error}</div>
                 <div style="margin-top: 1rem; font-size: 0.85rem; color: #FCA5A5;">
                     Please check your composition and try again.
                 </div>
             </div>
             ''', unsafe_allow_html=True)
-            if st.button("🔄 Try Again", use_container_width=True, type="secondary"):
+            if st.button("Try Again", use_container_width=True, type="secondary"):
                 st.session_state.prediction_error = None
                 st.session_state.predictions = None
                 st.rerun()
@@ -929,7 +915,7 @@ with col2:
             st.markdown('<div class="section-title">Prediction Panel</div>', unsafe_allow_html=True)
             st.markdown("""
             <div class="glass-card" style="text-align: center; padding: 2rem 1.5rem;">
-                <div style="font-size: 2.5rem; color: #00B4DB; margin-bottom: 0.8rem;">⚗️</div>
+                <div style="font-size: 2.5rem; color: #00B4DB; margin-bottom: 0.8rem;"> </div>
                 <div style="color: #FFFFFF; font-size: 1.2rem; font-weight: 700; margin-bottom: 0.5rem; font-family: 'Space Grotesk', sans-serif;">
                     READY FOR ANALYSIS
                 </div>
@@ -950,21 +936,21 @@ with col2:
             st.markdown('<div class="section-title">Batch Processing Error</div>', unsafe_allow_html=True)
             st.markdown(f'''
             <div class="error-message">
-                <div style="font-weight: 600; margin-bottom: 0.5rem;">❌ Batch Processing Failed</div>
+                <div style="font-weight: 600; margin-bottom: 0.5rem;">Batch Processing Failed</div>
                 <div style="font-size: 0.9rem;">{st.session_state.batch_error}</div>
                 <div style="margin-top: 1rem; font-size: 0.85rem; color: #FCA5A5;">
                     Please check your CSV file and try again.
                 </div>
             </div>
             ''', unsafe_allow_html=True)
-            if st.button("🔄 Clear Error", use_container_width=True, type="secondary"):
+            if st.button("Clear Error", use_container_width=True, type="secondary"):
                 st.session_state.batch_error = None
                 st.rerun()
         else:
             st.markdown('<div class="section-title">Batch Panel</div>', unsafe_allow_html=True)
             st.markdown("""
             <div class="glass-card" style="text-align: center; padding: 2rem 1.5rem;">
-                <div style="font-size: 2.5rem; color: #00B4DB; margin-bottom: 0.8rem;">📁</div>
+                <div style="font-size: 2.5rem; color: #00B4DB; margin-bottom: 0.8rem;"> </div>
                 <div style="color: #FFFFFF; font-size: 1.2rem; font-weight: 700; margin-bottom: 0.5rem; font-family: 'Space Grotesk', sans-serif;">
                     UPLOAD A CSV FILE
                 </div>
