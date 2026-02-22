@@ -18,268 +18,253 @@ st.set_page_config(
 )
 
 # Custom CSS – improved contrast for results and examples
-st.markdown("""
+st.markdown(r"""
 <style>
-    /* Main Styles */
-    .main-header {
-        background: linear-gradient(90deg, #0F172A 0%, #1E293B 100%);
-        padding: 1.5rem 2rem;
-        border-radius: 12px;
-        margin-bottom: 2rem;
-        text-align: center;
-        color: white;
-        font-size: 2rem;
-        font-weight: 700;
-        letter-spacing: -0.02em;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-        border: 1px solid rgba(0, 180, 219, 0.2);
-        font-family: 'Space Grotesk', sans-serif;
-        position: relative;
-    }
-    
-    .reset-btn-container {
-        position: absolute;
-        top: 1rem;
-        right: 2rem;
-    }
-    
-    .main-container {
-        max-width: 100% !important;
-        width: 100% !important;
-        padding: 0 1rem;
-    }
-    
-    .glass-card {
-        background: rgba(30, 41, 59, 0.8);
-        border: 1px solid rgba(0, 180, 219, 0.2);
-        border-radius: 12px;
-        padding: 1.5rem;
-        margin-bottom: 1.5rem;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-        backdrop-filter: blur(10px);
-        transition: all 0.3s ease;
-    }
-    
-    .glass-card:hover {
-        border-color: rgba(0, 180, 219, 0.4);
-        box-shadow: 0 12px 40px rgba(0, 180, 219, 0.15);
-    }
-    
-    .section-title {
-        color: #00B4DB;
-        font-size: 1.1rem;
-        font-weight: 700;
-        margin-bottom: 1rem;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        font-family: 'Space Grotesk', sans-serif;
-    }
-    
-    .element-tag {
-        background: linear-gradient(90deg, #00B4DB, #0083B0);
-        color: white;
-        padding: 0.3rem 0.6rem;
-        border-radius: 6px;
-        font-size: 0.85rem;
-        font-weight: 600;
-        display: inline-block;
-        margin: 0.2rem;
-        box-shadow: 0 2px 8px rgba(0, 180, 219, 0.3);
-        transition: all 0.2s ease;
-    }
-    
-    .element-tag:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0, 180, 219, 0.4);
-    }
-    
-    /* METRIC CARDS – deeper cyan for values, darker labels */
-    .metric-card {
-        background: linear-gradient(135deg, rgba(0, 180, 219, 0.1), rgba(0, 131, 176, 0.1));
-        border: 1px solid rgba(0, 180, 219, 0.3);
-        border-radius: 10px;
-        padding: 1rem;
-        text-align: center;
-        transition: all 0.3s ease;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-    }
-    
-    .metric-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 8px 25px rgba(0, 180, 219, 0.2);
-    }
-    
-    .metric-label {
-        color: #94A3B8;              /* darker gray */
-        font-size: 0.75rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        margin-bottom: 0.5rem;
-    }
-    
-    .metric-value {
-        color: #00B4DB;               /* deeper cyan */
-        font-size: 2rem;
-        font-weight: 800;
-        font-family: 'Space Grotesk', sans-serif;
-        line-height: 1.2;
-        text-shadow: 0 0 8px rgba(0, 180, 219, 0.3);
-    }
-    
-    .metric-value.phase {
-        font-size: 2.5rem;
-        font-weight: 900;
-    }
-    
-    .metric-sub {
-        color: #64748B;                /* darker than before */
-        font-size: 0.7rem;
-        margin-top: 0.3rem;
-        font-weight: 500;
-    }
-    
-    /* PROPERTY ROWS – darker labels and deeper cyan values */
-    .property-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 0.75rem 0;
-        border-bottom: 1px solid rgba(0, 180, 219, 0.1);
-        transition: all 0.2s ease;
-    }
-    
-    .property-row:hover {
-        background: rgba(0, 180, 219, 0.05);
-        padding-left: 0.5rem;
-        padding-right: 0.5rem;
-        margin: 0 -0.5rem;
-        border-radius: 6px;
-    }
-    
-    .property-row:last-child {
-        border-bottom: none;
-    }
-    
-    .property-label {
-        color: #A0AEC0;               /* darker, more muted */
-        font-size: 0.9rem;
-        font-weight: 500;
-    }
-    
-    .property-value {
-        color: #00B4DB;               /* deeper cyan */
-        font-size: 0.95rem;
-        font-weight: 700;
-        font-family: 'Space Grotesk', sans-serif;
-    }
-    
-    /* Compact composition display */
-    .compact-composition {
-        background: rgba(30, 41, 59, 0.5);
-        border: 1px solid rgba(0, 180, 219, 0.2);
-        border-radius: 8px;
-        padding: 1rem;
-        margin-bottom: 1rem;
-    }
-    
-    .composition-string {
-        font-family: 'Space Grotesk', monospace;
-        font-size: 1.2rem;
-        font-weight: 600;
-        color: #00B4DB;
-        letter-spacing: 0.5px;
-    }
-    
-    .gauge-container {
-        background: rgba(30, 41, 59, 0.9);
-        border: 1px solid rgba(0, 180, 219, 0.3);
-        border-radius: 12px;
-        padding: 1.5rem;
-        margin-bottom: 1.5rem;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-    }
-    
-    .stButton > button {
-        background: linear-gradient(90deg, #00B4DB, #0083B0);
-        color: white;
-        border: none;
-        border-radius: 8px;
-        font-weight: 600;
-        padding: 0.6rem 1.2rem;
-        transition: all 0.3s ease;
-        font-family: 'Inter', sans-serif;
-    }
-    
-    .stButton > button:hover {
-        background: linear-gradient(90deg, #0083B0, #006994);
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(0, 180, 219, 0.3);
-    }
-    
-    .stButton > button:active {
-        transform: translateY(0);
-    }
-    
-    .stSlider {
-        margin-bottom: 1rem;
-    }
-    
-    .stSlider > div > div > div {
-        background: linear-gradient(90deg, #00B4DB, #0083B0) !important;
-    }
-    
-    .stProgress > div > div {
-        background: linear-gradient(90deg, #00B4DB, #0083B0);
-    }
-    
-    .warning-text {
-        color: #F87171 !important;
-        font-weight: 600 !important;
-    }
-    
-    .success-text {
-        color: #4ADE80 !important;
-        font-weight: 600 !important;
-    }
-    
-    /* EXAMPLES BOX – improved contrast */
-    .examples-box {
-        background: #1F2A3A;          /* darker background */
-        border: 1px solid #2D3A4A;    /* subtle border */
-        border-radius: 6px;
-        padding: 0.6rem;
-        margin: 0.5rem 0;
-        font-size: 0.75rem;
-        color: #E0E0E0;                /* brighter text */
-        line-height: 1.5;
-    }
-    
-    .stTextInput > div > div > input {
-        background: rgba(30, 41, 59, 0.7) !important;
-        border: 1px solid rgba(0, 180, 219, 0.3) !important;
-        color: white !important;
-        border-radius: 6px;
-        padding: 0.5rem 0.75rem !important;
-    }
-    
-    .stTextInput > div > div > input:focus {
-        border-color: #00B4DB !important;
-        box-shadow: 0 0 0 2px rgba(0, 180, 219, 0.2) !important;
-    }
-    
-    .error-message {
-        background: rgba(239, 68, 68, 0.1);
-        border: 1px solid rgba(239, 68, 68, 0.3);
-        border-radius: 8px;
-        padding: 1rem;
-        color: #F87171;
-        margin: 1rem 0;
-    }
+/* Main Styles */
+.main-header {
+    background: linear-gradient(90deg, #0F172A 0%, #1E293B 100%);
+    padding: 1.5rem 2rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+    text-align: center;
+    color: white;
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(0, 180, 219, 0.2);
+    font-family: 'Space Grotesk', sans-serif;
+    position: relative;
+}
+
+.reset-btn-container {
+    position: absolute;
+    top: 1rem;
+    right: 2rem;
+}
+
+.main-container {
+    max-width: 100% !important;
+    width: 100% !important;
+    padding: 0 1rem;
+}
+
+.glass-card {
+    background: rgba(30, 41, 59, 0.8);
+    border: 1px solid rgba(0, 180, 219, 0.2);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+}
+
+.glass-card:hover {
+    border-color: rgba(0, 180, 219, 0.4);
+    box-shadow: 0 12px 40px rgba(0, 180, 219, 0.15);
+}
+
+/* Section title and tags */
+.section-title {
+    color: #00B4DB;
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: 'Space Grotesk', sans-serif;
+}
+
+.element-tag {
+    background: linear-gradient(90deg, #00B4DB, #0083B0);
+    color: white;
+    padding: 0.3rem 0.6rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: inline-block;
+    margin: 0.2rem;
+    box-shadow: 0 2px 8px rgba(0, 180, 219, 0.3);
+    transition: all 0.2s ease;
+}
+
+.element-tag:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 180, 219, 0.4);
+}
+
+/* Metric cards */
+.metric-card {
+    background: linear-gradient(135deg, rgba(0, 180, 219, 0.1), rgba(0, 131, 176, 0.1));
+    border: 1px solid rgba(0, 180, 219, 0.3);
+    border-radius: 10px;
+    padding: 1rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.metric-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 180, 219, 0.2);
+}
+
+.metric-label {
+    color: #94A3B8;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.5rem;
+}
+
+.metric-value {
+    color: #00B4DB;
+    font-size: 2rem;
+    font-weight: 800;
+    font-family: 'Space Grotesk', sans-serif;
+    line-height: 1.2;
+    text-shadow: 0 0 8px rgba(0, 180, 219, 0.3);
+}
+
+.metric-value.phase {
+    font-size: 2.5rem;
+    font-weight: 900;
+}
+
+.metric-sub {
+    color: #64748B;
+    font-size: 0.7rem;
+    margin-top: 0.3rem;
+    font-weight: 500;
+}
+
+/* Property rows */
+.property-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid rgba(0, 180, 219, 0.1);
+    transition: all 0.2s ease;
+}
+
+.property-row:hover {
+    background: rgba(0, 180, 219, 0.05);
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    margin: 0 -0.5rem;
+    border-radius: 6px;
+}
+
+.property-row:last-child {
+    border-bottom: none;
+}
+
+.property-label {
+    color: #A0AEC0;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.property-value {
+    color: #00B4DB;
+    font-size: 0.95rem;
+    font-weight: 700;
+    font-family: 'Space Grotesk', sans-serif;
+}
+
+/* Compact composition */
+.compact-composition {
+    background: rgba(30, 41, 59, 0.5);
+    border: 1px solid rgba(0, 180, 219, 0.2);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.composition-string {
+    font-family: 'Space Grotesk', monospace;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #00B4DB;
+    letter-spacing: 0.5px;
+}
+
+/* Gauge container */
+.gauge-container {
+    background: rgba(30, 41, 59, 0.9);
+    border: 1px solid rgba(0, 180, 219, 0.3);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+/* Buttons and controls */
+.stButton > button {
+    background: linear-gradient(90deg, #00B4DB, #0083B0);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    padding: 0.6rem 1.2rem;
+    transition: all 0.3s ease;
+    font-family: Inter, sans-serif;
+}
+
+.stButton > button:hover {
+    background: linear-gradient(90deg, #0083B0, #006994);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 180, 219, 0.3);
+}
+
+.stButton > button:active {
+    transform: translateY(0);
+}
+
+.stSlider {
+    margin-bottom: 1rem;
+}
+
+/* Examples box */
+.examples-box {
+    background: #1F2A3A;
+    border: 1px solid #2D3A4A;
+    border-radius: 6px;
+    padding: 0.6rem;
+    margin: 0.5rem 0;
+    font-size: 0.75rem;
+    color: #E0E0E0;
+    line-height: 1.5;
+}
+
+.stTextInput > div > div > input {
+    background: rgba(30, 41, 59, 0.7) !important;
+    border: 1px solid rgba(0, 180, 219, 0.3) !important;
+    color: white !important;
+    border-radius: 6px;
+    padding: 0.5rem 0.75rem !important;
+}
+
+.stTextInput > div > div > input:focus {
+    border-color: #00B4DB !important;
+    box-shadow: 0 0 0 2px rgba(0, 180, 219, 0.2) !important;
+}
+
+.error-message {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 8px;
+    padding: 1rem;
+    color: #F87171;
+    margin: 1rem 0;
+}
 </style>
 """, unsafe_allow_html=True)
 
