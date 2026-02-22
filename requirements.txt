@@ -18,3 +18,4 @@ torchaudio==2.2.0
 torchvision==0.17.0
 xgboost==2.1.4
 category-encoders
+html
