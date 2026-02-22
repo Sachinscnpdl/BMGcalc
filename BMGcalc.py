@@ -1,10 +1,14 @@
 # Authored by Sachin Poudel, Silesian University, Poland
+
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
 import numpy as np
 import re
 import base64
+import pickle
+import sys
+import io
 
 # Import the full pipeline
 from bmg_pipeline import ModularBMGPipeline
@@ -19,6 +23,33 @@ def web_safe(val, precision=2):
     # Remove non-printable characters and newlines
     clean_str = "".join(char for char in str(val) if char.isprintable()).strip()
     return clean_str
+
+# --- COMPATIBILITY FIX FOR SCIKIT-LEARN DECISION TREE ---
+class CompatibleUnpickler(pickle.Unpickler):
+    """Custom unpickler to handle scikit-learn version compatibility issues"""
+    def find_class(self, module, name):
+        if module == 'sklearn.tree._tree' and name == 'Tree':
+            # Return a compatible Tree class
+            from sklearn.tree._tree import Tree
+            return Tree
+        return super().find_class(module, name)
+
+def compatible_pickle_load(file_obj):
+    """Load pickle with compatibility handling for decision trees"""
+    try:
+        # First try normal unpickling
+        return pickle.load(file_obj)
+    except (ValueError, TypeError) as e:
+        if "node array from the pickle has an incompatible dtype" in str(e):
+            # Reset file position
+            file_obj.seek(0)
+            # Try with our compatible unpickler
+            return CompatibleUnpickler(file_obj).load()
+        raise e
+
+# Monkey patch pickle.load in the bmg_pipeline module
+original_pickle_load = pickle.load
+pickle.load = compatible_pickle_load
 
 # Page configuration
 st.set_page_config(
@@ -83,7 +114,12 @@ st.markdown('<div class="main-header">BMGcalc Predictor</div>', unsafe_allow_htm
 
 # Initialize Pipeline
 if 'pipeline' not in st.session_state:
-    st.session_state.pipeline = ModularBMGPipeline()
+    try:
+        st.session_state.pipeline = ModularBMGPipeline()
+        st.success("Pipeline initialized successfully!")
+    except Exception as e:
+        st.error(f"Failed to initialize pipeline: {str(e)}")
+        st.info("This might be due to a version compatibility issue with the saved models.")
 
 # Input Section
 alloy_input = st.text_input("Enter Alloy Composition (e.g., Zr65Cu15Ni10Al10)", "Zr65Cu15Ni10Al10")
@@ -154,3 +190,4 @@ if st.button("Predict"):
 
         except Exception as e:
             st.error(f"Pipeline Error: {str(e)}")
+            st.info("This error is likely due to a version compatibility issue with the saved models. Consider updating scikit-learn or retraining the models with your current version.")
