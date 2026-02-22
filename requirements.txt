@@ -1,29 +1,18 @@
-# CORE APP
 streamlit==1.30.0
-
-# SCIENTIFIC STACK (Version critical to fix the node array error)
 numpy==1.23.5
 pandas==1.5.3
 scipy==1.10.1
-scikit-learn==1.2.2  <-- This specific version is likely the fix
+scikit-learn==1.2.2
 joblib==1.2.0
-
-# MACHINE LEARNING
 imbalanced-learn==0.10.1
 xgboost==2.1.4
 lightgbm==4.6.0
 category-encoders==2.6.4
-
-# DEEP LEARNING
 torch==2.2.0
 torchvision==0.17.0
 pytorch-tabnet==4.1.0
-
-# MATERIALS SCIENCE
 pymatgen==2023.8.10
 matminer==0.9.0
-
-# VISUALIZATION
 plotly==5.14.0
 matplotlib==3.7.5
 seaborn==0.13.2
