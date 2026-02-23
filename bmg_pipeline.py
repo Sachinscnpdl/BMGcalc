@@ -180,7 +180,7 @@ class ModularBMGPipeline:
             df_feats["__featurizer_dummy__"] = 0.0
 
         # Helpful debug info
-        print("Featurized columns:", list(df_feats.columns))
+        #print("Featurized columns:", list(df_feats.columns))
         temp_feat_path = os.path.join(self.temp_dir, "step1_feats.csv")
         df_feats.to_csv(temp_feat_path, index=False)
 

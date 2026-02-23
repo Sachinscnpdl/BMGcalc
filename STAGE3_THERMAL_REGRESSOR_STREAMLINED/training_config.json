@@ -1,5 +1,5 @@
 {
-    "best_global_mae": 14.44236880059612,
+    "best_global_mae": 15.205665588378906,
     "random_seed": 42,
     "k_folds": 5,
     "epochs": 600,

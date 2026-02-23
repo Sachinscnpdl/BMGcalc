@@ -476,10 +476,10 @@ def train_model():
     class_weight_dict = {i: float(inv[i]) for i in range(len(inv))}
     print("Meta class weights:", class_weight_dict)
     
-    meta_clf = LogisticRegression(multi_class='multinomial', solver='lbfgs', max_iter=4000,
-                                  class_weight=class_weight_dict, random_state=SEED)
+    meta_clf = LogisticRegression(solver='lbfgs', max_iter=4000,
+                                class_weight=class_weight_dict, random_state=SEED)
     meta_clf.fit(meta_input, y_train)
-    
+        
     # final resampling
     counts_full = np.bincount(y_train)
     target_min_full = max(int(counts_full.max() * SMOTE_FRACTION), counts_full.min())
