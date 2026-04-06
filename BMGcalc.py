@@ -114,7 +114,7 @@ st.markdown("""
     }
     
     .metric-label {
-        color: #94A3B8;
+        color: #94A3B8;              /* darker gray */
         font-size: 0.75rem;
         font-weight: 600;
         text-transform: uppercase;
@@ -123,7 +123,7 @@ st.markdown("""
     }
     
     .metric-value {
-        color: #00B4DB;
+        color: #00B4DB;               /* deeper cyan */
         font-size: 2rem;
         font-weight: 800;
         font-family: 'Space Grotesk', sans-serif;
@@ -137,7 +137,7 @@ st.markdown("""
     }
     
     .metric-sub {
-        color: #64748B;
+        color: #64748B;                /* darker than before */
         font-size: 0.7rem;
         margin-top: 0.3rem;
         font-weight: 500;
@@ -166,13 +166,13 @@ st.markdown("""
     }
     
     .property-label {
-        color: #A0AEC0;
+        color: #A0AEC0;               /* darker, more muted */
         font-size: 0.9rem;
         font-weight: 500;
     }
     
     .property-value {
-        color: #00B4DB;
+        color: #00B4DB;               /* deeper cyan */
         font-size: 0.95rem;
         font-weight: 700;
         font-family: 'Space Grotesk', sans-serif;
@@ -249,13 +249,13 @@ st.markdown("""
     
     /* EXAMPLES BOX – improved contrast */
     .examples-box {
-        background: #1F2A3A;
-        border: 1px solid #2D3A4A;
+        background: #1F2A3A;          /* darker background */
+        border: 1px solid #2D3A4A;    /* subtle border */
         border-radius: 6px;
         padding: 0.6rem;
         margin: 0.5rem 0;
         font-size: 0.75rem;
-        color: #E0E0E0;
+        color: #E0E0E0;                /* brighter text */
         line-height: 1.5;
     }
     
@@ -342,15 +342,10 @@ def create_simple_gauge(dmax_value):
         title={'text': "GLASS FORMING ABILITY", 'font': {'size': 20, 'color': '#00B4DB', 'family': 'Space Grotesk'}},
         number={'font': {'size': 36, 'color': '#FFFFFF', 'family': 'Space Grotesk'}, 'suffix': " mm"},
         gauge={
-            'axis': {
-                'range': [0, 10],
-                'tickcolor': '#CBD5E1',
-                'tickfont': {'color': '#CBD5E1', 'size': 10},
-                'tickwidth': 1
-            },
+            'axis': {'range': [0, 10], 'tickuse_container_width': 1, 'tickcolor': '#CBD5E1', 'tickfont': {'color': '#CBD5E1', 'size': 10}},
             'bar': {'color': "#00B4DB", 'thickness': 0.25},
             'bgcolor': "rgba(0,0,0,0)",
-            'borderwidth': 2,
+            'borderuse_container_width': 2,
             'bordercolor': "#00B4DB",
             'steps': [
                 {'range': [0, 1], 'color': 'rgba(239, 68, 68, 0.7)'},
@@ -376,13 +371,11 @@ def create_composition_pie(elements, fractions):
         labels=[f"{elem}" for elem in elements],
         values=fractions,
         hole=.4,
-        marker=dict(
-            colors=colors[:len(elements)],
-            line=dict(color='rgba(255,255,255,0.3)', width=1)
-        ),
+        marker_colors=colors[:len(elements)],
         textinfo='label+percent',
         textfont=dict(size=12, color='white', family='Inter'),
-        hovertemplate="<b>%{label}</b><br>%{percent}<extra></extra>"
+        hovertemplate="<b>%{label}</b><br>%{percent}<extra></extra>",
+        marker=dict(line=dict(color='rgba(255,255,255,0.3)', use_container_width=1))
     )])
     fig.update_layout(
         showlegend=False,
@@ -740,7 +733,7 @@ with col1:
                                 st.session_state.show_periodic_table = False
                             st.rerun()
                 
-                st.markdown('</div>', unsafe_allow_html=True)
+                st.markdown('</div>', unsafe_allow_html=True)  # close manual input card
             
             # ---- IF MANUAL INPUT IS CLOSED and there are selected elements, show the separate composition card ----
             if not st.session_state.show_manual_input and st.session_state.selected_elements:
