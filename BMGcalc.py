@@ -114,7 +114,7 @@ st.markdown("""
     }
     
     .metric-label {
-        color: #94A3B8;              /* darker gray */
+        color: #94A3B8;
         font-size: 0.75rem;
         font-weight: 600;
         text-transform: uppercase;
@@ -123,7 +123,7 @@ st.markdown("""
     }
     
     .metric-value {
-        color: #00B4DB;               /* deeper cyan */
+        color: #00B4DB;
         font-size: 2rem;
         font-weight: 800;
         font-family: 'Space Grotesk', sans-serif;
@@ -137,7 +137,7 @@ st.markdown("""
     }
     
     .metric-sub {
-        color: #64748B;                /* darker than before */
+        color: #64748B;
         font-size: 0.7rem;
         margin-top: 0.3rem;
         font-weight: 500;
@@ -166,13 +166,13 @@ st.markdown("""
     }
     
     .property-label {
-        color: #A0AEC0;               /* darker, more muted */
+        color: #A0AEC0;
         font-size: 0.9rem;
         font-weight: 500;
     }
     
     .property-value {
-        color: #00B4DB;               /* deeper cyan */
+        color: #00B4DB;
         font-size: 0.95rem;
         font-weight: 700;
         font-family: 'Space Grotesk', sans-serif;
@@ -249,13 +249,13 @@ st.markdown("""
     
     /* EXAMPLES BOX – improved contrast */
     .examples-box {
-        background: #1F2A3A;          /* darker background */
-        border: 1px solid #2D3A4A;    /* subtle border */
+        background: #1F2A3A;
+        border: 1px solid #2D3A4A;
         border-radius: 6px;
         padding: 0.6rem;
         margin: 0.5rem 0;
         font-size: 0.75rem;
-        color: #E0E0E0;                /* brighter text */
+        color: #E0E0E0;
         line-height: 1.5;
     }
     
@@ -283,7 +283,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Initialize session state (unchanged)
+# Initialize session state
 if 'selected_elements' not in st.session_state:
     st.session_state.selected_elements = []
 if 'predictions' not in st.session_state:
@@ -300,7 +300,6 @@ if 'show_manual_input' not in st.session_state:
     st.session_state.show_manual_input = False
 if 'prediction_error' not in st.session_state:
     st.session_state.prediction_error = None
-# Batch processing session state
 if 'batch_results' not in st.session_state:
     st.session_state.batch_results = None
 if 'batch_error' not in st.session_state:
@@ -519,7 +518,7 @@ with header_col1:
     st.markdown('<div class="main-header">⚗️ BMGcalc - Metallic Glass Predictor</div>', unsafe_allow_html=True)
 with header_col2:
     st.markdown('<div style="margin-top: 1.5rem;">', unsafe_allow_html=True)
-    if st.button("🔄 Reset", key="reset_button", width="stretch"):
+    if st.button("🔄 Reset", key="reset_button", width='stretch'):
         reset_app()
         st.rerun()
     st.markdown('</div>', unsafe_allow_html=True)
@@ -552,7 +551,7 @@ with col1:
                 </div>
             </div>
             ''', unsafe_allow_html=True)
-            if st.button("✏️ Edit Composition", width="stretch", type="secondary"):
+            if st.button("✏️ Edit Composition", width='stretch', type="secondary"):
                 st.session_state.predictions = None
                 st.session_state.show_periodic_table = True
                 st.rerun()
@@ -572,7 +571,7 @@ with col1:
             with show_hide_col2:
                 button_label = "🔽 Hide Table" if st.session_state.show_periodic_table else "🔼 Show Table"
                 button_type = "secondary" if st.session_state.show_periodic_table else "primary"
-                if st.button(button_label, key="toggle_table", type=button_type, width="stretch"):
+                if st.button(button_label, key="toggle_table", type=button_type):
                     st.session_state.show_periodic_table = not st.session_state.show_periodic_table
                     st.rerun()
             
@@ -589,7 +588,7 @@ with col1:
                                     element,
                                     key=f"btn_{element}_{row_idx}_{col_idx}",
                                     type="primary" if is_selected else "secondary",
-                                    width="stretch"
+                                    width='stretch'
                                 ):
                                     if element in st.session_state.selected_elements:
                                         st.session_state.selected_elements.remove(element)
@@ -609,7 +608,7 @@ with col1:
             
             # Manual Input Toggle
             if not st.session_state.show_manual_input:
-                if st.button("📝 Manual Input", key="toggle_manual", width="stretch", type="secondary"):
+                if st.button("📝 Manual Input", key="toggle_manual", width='stretch', type="secondary"):
                     st.session_state.show_manual_input = True
                     st.rerun()
             
@@ -632,7 +631,7 @@ with col1:
                 </div>
                 """, unsafe_allow_html=True)
                 
-                if st.button("Apply & Predict", key="apply_composition", type="primary", width="stretch"):
+                if st.button("Apply & Predict", key="apply_composition", type="primary", width='stretch'):
                     if comp_string:
                         elements, fractions = parse_composition_string(comp_string)
                         if elements and fractions:
@@ -720,10 +719,10 @@ with col1:
                             st.session_state.selected_elements,
                             [st.session_state.element_fractions.get(elem, 0) for elem in st.session_state.selected_elements]
                         )
-                        st.plotly_chart(fig_pie, width="stretch", config={'displayModeBar': False})
+                        st.plotly_chart(fig_pie, width='stretch', config={'displayModeBar': False})
                         st.markdown('</div>', unsafe_allow_html=True)
                     
-                    if st.button("🚀 Predict Properties", width="stretch", type="primary"):
+                    if st.button("🚀 Predict Properties", width='stretch', type="primary"):
                         composition = "".join([f"{elem}{int(st.session_state.element_fractions[elem])}" 
                                              for elem in st.session_state.selected_elements])
                         st.session_state.prediction_error = None
@@ -802,10 +801,10 @@ with col1:
                         st.session_state.selected_elements,
                         [st.session_state.element_fractions.get(elem, 0) for elem in st.session_state.selected_elements]
                     )
-                    st.plotly_chart(fig_pie, width="stretch", config={'displayModeBar': False})
+                    st.plotly_chart(fig_pie, width='stretch', config={'displayModeBar': False})
                     st.markdown('</div>', unsafe_allow_html=True)
                 
-                if st.button("🚀 Predict Properties", width="stretch", type="primary"):
+                if st.button("🚀 Predict Properties", width='stretch', type="primary"):
                     composition = "".join([f"{elem}{int(st.session_state.element_fractions[elem])}" 
                                          for elem in st.session_state.selected_elements])
                     st.session_state.prediction_error = None
@@ -829,11 +828,11 @@ with col1:
             try:
                 df_preview = pd.read_csv(uploaded_file)
                 st.markdown("**File Preview:**")
-                st.dataframe(df_preview.head(), width="stretch")
+                st.dataframe(df_preview.head(), width='stretch')
                 if 'Alloys' not in df_preview.columns:
                     st.error("The uploaded CSV does not contain an 'Alloys' column.")
                 else:
-                    if st.button("🚀 Run Batch Prediction", width="stretch", type="primary"):
+                    if st.button("🚀 Run Batch Prediction", width='stretch', type="primary"):
                         st.session_state.batch_error = None
                         with st.spinner("Processing batch... This may take a while."):
                             uploaded_file.seek(0)
@@ -851,7 +850,7 @@ with col2:
         if st.session_state.predictions is not None:
             st.markdown('<div class="section-title">Prediction Results</div>', unsafe_allow_html=True)
             if not st.session_state.show_periodic_table:
-                if st.button("📋 Show Periodic Table", key="show_table_results", type="secondary", width="stretch"):
+                if st.button("📋 Show Periodic Table", key="show_table_results", type="secondary"):
                     st.session_state.show_periodic_table = True
                     st.rerun()
             st.markdown('<div class="glass-card">', unsafe_allow_html=True)
@@ -892,7 +891,7 @@ with col2:
             st.markdown('<div class="section-title">Glass Forming Ability</div>', unsafe_allow_html=True)
             st.markdown('<div class="gauge-container">', unsafe_allow_html=True)
             fig_gauge = create_simple_gauge(pred['Predicted_Dmax'])
-            st.plotly_chart(fig_gauge, width="stretch", config={'displayModeBar': False})
+            st.plotly_chart(fig_gauge, width='stretch', config={'displayModeBar': False})
             st.markdown('</div>', unsafe_allow_html=True)
             
             composition = "".join([f"{elem}{int(st.session_state.element_fractions[elem])}" 
@@ -921,7 +920,7 @@ with col2:
                 </div>
             </div>
             ''', unsafe_allow_html=True)
-            if st.button("🔄 Try Again", width="stretch", type="secondary"):
+            if st.button("🔄 Try Again", width='stretch', type="secondary"):
                 st.session_state.prediction_error = None
                 st.session_state.predictions = None
                 st.rerun()
@@ -943,7 +942,7 @@ with col2:
         if st.session_state.batch_results is not None:
             st.markdown('<div class="section-title">Batch Results</div>', unsafe_allow_html=True)
             st.markdown('<div class="glass-card">', unsafe_allow_html=True)
-            st.dataframe(st.session_state.batch_results, width="stretch")
+            st.dataframe(st.session_state.batch_results, width='stretch')
             st.markdown(get_download_link(st.session_state.batch_results, "batch_predictions.csv"), unsafe_allow_html=True)
             st.markdown('</div>', unsafe_allow_html=True)
         elif st.session_state.batch_error is not None:
@@ -957,7 +956,7 @@ with col2:
                 </div>
             </div>
             ''', unsafe_allow_html=True)
-            if st.button("🔄 Clear Error", width="stretch", type="secondary"):
+            if st.button("🔄 Clear Error", width='stretch', type="secondary"):
                 st.session_state.batch_error = None
                 st.rerun()
         else:
