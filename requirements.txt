@@ -1,8 +1,7 @@
 streamlit
 setuptools
 numpy
-#pandas
-pandas==1.5.3
+pandas
 scipy
 scikit-learn 
 joblib
