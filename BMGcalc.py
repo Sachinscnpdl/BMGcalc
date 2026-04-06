@@ -572,7 +572,7 @@ with col1:
             with show_hide_col2:
                 button_label = "🔽 Hide Table" if st.session_state.show_periodic_table else "🔼 Show Table"
                 button_type = "secondary" if st.session_state.show_periodic_table else "primary"
-                if st.button(button_label, key="toggle_table", type=button_type, use_container_width=True):
+                if st.button(button_label, key="toggle_table", type=button_type):
                     st.session_state.show_periodic_table = not st.session_state.show_periodic_table
                     st.rerun()
             
@@ -851,7 +851,7 @@ with col2:
         if st.session_state.predictions is not None:
             st.markdown('<div class="section-title">Prediction Results</div>', unsafe_allow_html=True)
             if not st.session_state.show_periodic_table:
-                if st.button("📋 Show Periodic Table", key="show_table_results", type="secondary", use_container_width=True):
+                if st.button("📋 Show Periodic Table", key="show_table_results", type="secondary"):
                     st.session_state.show_periodic_table = True
                     st.rerun()
             st.markdown('<div class="glass-card">', unsafe_allow_html=True)
