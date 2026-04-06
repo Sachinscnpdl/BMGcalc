@@ -44,8 +44,8 @@ st.markdown("""
     }
     
     .main-container {
-        max-use_container_use_container_width: 100% !important;
-        use_container_use_container_width: 100% !important;
+        max-use_container_width: 100% !important;
+        use_container_width: 100% !important;
         padding: 0 1rem;
     }
     
@@ -114,7 +114,7 @@ st.markdown("""
     }
     
     .metric-label {
-        color: #94A3B8;              /* darker gray */
+        color: #94A3B8;
         font-size: 0.75rem;
         font-weight: 600;
         text-transform: uppercase;
@@ -123,7 +123,7 @@ st.markdown("""
     }
     
     .metric-value {
-        color: #00B4DB;               /* deeper cyan */
+        color: #00B4DB;
         font-size: 2rem;
         font-weight: 800;
         font-family: 'Space Grotesk', sans-serif;
@@ -137,7 +137,7 @@ st.markdown("""
     }
     
     .metric-sub {
-        color: #64748B;                /* darker than before */
+        color: #64748B;
         font-size: 0.7rem;
         margin-top: 0.3rem;
         font-weight: 500;
@@ -166,13 +166,13 @@ st.markdown("""
     }
     
     .property-label {
-        color: #A0AEC0;               /* darker, more muted */
+        color: #A0AEC0;
         font-size: 0.9rem;
         font-weight: 500;
     }
     
     .property-value {
-        color: #00B4DB;               /* deeper cyan */
+        color: #00B4DB;
         font-size: 0.95rem;
         font-weight: 700;
         font-family: 'Space Grotesk', sans-serif;
@@ -249,13 +249,13 @@ st.markdown("""
     
     /* EXAMPLES BOX – improved contrast */
     .examples-box {
-        background: #1F2A3A;          /* darker background */
-        border: 1px solid #2D3A4A;    /* subtle border */
+        background: #1F2A3A;
+        border: 1px solid #2D3A4A;
         border-radius: 6px;
         padding: 0.6rem;
         margin: 0.5rem 0;
         font-size: 0.75rem;
-        color: #E0E0E0;                /* brighter text */
+        color: #E0E0E0;
         line-height: 1.5;
     }
     
@@ -342,10 +342,15 @@ def create_simple_gauge(dmax_value):
         title={'text': "GLASS FORMING ABILITY", 'font': {'size': 20, 'color': '#00B4DB', 'family': 'Space Grotesk'}},
         number={'font': {'size': 36, 'color': '#FFFFFF', 'family': 'Space Grotesk'}, 'suffix': " mm"},
         gauge={
-            'axis': {'range': [0, 10], 'tickuse_container_use_container_width': 1, 'tickcolor': '#CBD5E1', 'tickfont': {'color': '#CBD5E1', 'size': 10}},
+            'axis': {
+                'range': [0, 10],
+                'tickcolor': '#CBD5E1',
+                'tickfont': {'color': '#CBD5E1', 'size': 10},
+                'tickwidth': 1
+            },
             'bar': {'color': "#00B4DB", 'thickness': 0.25},
             'bgcolor': "rgba(0,0,0,0)",
-            'borderuse_container_use_container_width': 2,
+            'borderwidth': 2,
             'bordercolor': "#00B4DB",
             'steps': [
                 {'range': [0, 1], 'color': 'rgba(239, 68, 68, 0.7)'},
@@ -371,11 +376,13 @@ def create_composition_pie(elements, fractions):
         labels=[f"{elem}" for elem in elements],
         values=fractions,
         hole=.4,
-        marker_colors=colors[:len(elements)],
+        marker=dict(
+            colors=colors[:len(elements)],
+            line=dict(color='rgba(255,255,255,0.3)', width=1)
+        ),
         textinfo='label+percent',
         textfont=dict(size=12, color='white', family='Inter'),
-        hovertemplate="<b>%{label}</b><br>%{percent}<extra></extra>",
-        marker=dict(line=dict(color='rgba(255,255,255,0.3)', use_container_use_container_width=1))
+        hovertemplate="<b>%{label}</b><br>%{percent}<extra></extra>"
     )])
     fig.update_layout(
         showlegend=False,
@@ -519,7 +526,7 @@ with header_col1:
     st.markdown('<div class="main-header">⚗️ BMGcalc - Metallic Glass Predictor</div>', unsafe_allow_html=True)
 with header_col2:
     st.markdown('<div style="margin-top: 1.5rem;">', unsafe_allow_html=True)
-    if st.button("🔄 Reset", key="reset_button", use_container_use_container_width=True):
+    if st.button("🔄 Reset", key="reset_button", use_container_width=True):
         reset_app()
         st.rerun()
     st.markdown('</div>', unsafe_allow_html=True)
@@ -552,7 +559,7 @@ with col1:
                 </div>
             </div>
             ''', unsafe_allow_html=True)
-            if st.button("✏️ Edit Composition", use_container_use_container_width=True, type="secondary"):
+            if st.button("✏️ Edit Composition", use_container_width=True, type="secondary"):
                 st.session_state.predictions = None
                 st.session_state.show_periodic_table = True
                 st.rerun()
@@ -589,7 +596,7 @@ with col1:
                                     element,
                                     key=f"btn_{element}_{row_idx}_{col_idx}",
                                     type="primary" if is_selected else "secondary",
-                                    use_container_use_container_width=True
+                                    use_container_width=True
                                 ):
                                     if element in st.session_state.selected_elements:
                                         st.session_state.selected_elements.remove(element)
@@ -609,7 +616,7 @@ with col1:
             
             # Manual Input Toggle
             if not st.session_state.show_manual_input:
-                if st.button("📝 Manual Input", key="toggle_manual", use_container_use_container_width=True, type="secondary"):
+                if st.button("📝 Manual Input", key="toggle_manual", use_container_width=True, type="secondary"):
                     st.session_state.show_manual_input = True
                     st.rerun()
             
@@ -632,7 +639,7 @@ with col1:
                 </div>
                 """, unsafe_allow_html=True)
                 
-                if st.button("Apply & Predict", key="apply_composition", type="primary", use_container_use_container_width=True):
+                if st.button("Apply & Predict", key="apply_composition", type="primary", use_container_width=True):
                     if comp_string:
                         elements, fractions = parse_composition_string(comp_string)
                         if elements and fractions:
@@ -720,10 +727,10 @@ with col1:
                             st.session_state.selected_elements,
                             [st.session_state.element_fractions.get(elem, 0) for elem in st.session_state.selected_elements]
                         )
-                        st.plotly_chart(fig_pie, use_container_use_container_width=True, config={'displayModeBar': False})
+                        st.plotly_chart(fig_pie, use_container_width=True, config={'displayModeBar': False})
                         st.markdown('</div>', unsafe_allow_html=True)
                     
-                    if st.button("🚀 Predict Properties", use_container_use_container_width=True, type="primary"):
+                    if st.button("🚀 Predict Properties", use_container_width=True, type="primary"):
                         composition = "".join([f"{elem}{int(st.session_state.element_fractions[elem])}" 
                                              for elem in st.session_state.selected_elements])
                         st.session_state.prediction_error = None
@@ -733,7 +740,7 @@ with col1:
                                 st.session_state.show_periodic_table = False
                             st.rerun()
                 
-                st.markdown('</div>', unsafe_allow_html=True)  # close manual input card
+                st.markdown('</div>', unsafe_allow_html=True)
             
             # ---- IF MANUAL INPUT IS CLOSED and there are selected elements, show the separate composition card ----
             if not st.session_state.show_manual_input and st.session_state.selected_elements:
@@ -802,10 +809,10 @@ with col1:
                         st.session_state.selected_elements,
                         [st.session_state.element_fractions.get(elem, 0) for elem in st.session_state.selected_elements]
                     )
-                    st.plotly_chart(fig_pie, use_container_use_container_width=True, config={'displayModeBar': False})
+                    st.plotly_chart(fig_pie, use_container_width=True, config={'displayModeBar': False})
                     st.markdown('</div>', unsafe_allow_html=True)
                 
-                if st.button("🚀 Predict Properties", use_container_use_container_width=True, type="primary"):
+                if st.button("🚀 Predict Properties", use_container_width=True, type="primary"):
                     composition = "".join([f"{elem}{int(st.session_state.element_fractions[elem])}" 
                                          for elem in st.session_state.selected_elements])
                     st.session_state.prediction_error = None
@@ -829,11 +836,11 @@ with col1:
             try:
                 df_preview = pd.read_csv(uploaded_file)
                 st.markdown("**File Preview:**")
-                st.dataframe(df_preview.head(), use_container_use_container_width=True)
+                st.dataframe(df_preview.head(), use_container_width=True)
                 if 'Alloys' not in df_preview.columns:
                     st.error("The uploaded CSV does not contain an 'Alloys' column.")
                 else:
-                    if st.button("🚀 Run Batch Prediction", use_container_use_container_width=True, type="primary"):
+                    if st.button("🚀 Run Batch Prediction", use_container_width=True, type="primary"):
                         st.session_state.batch_error = None
                         with st.spinner("Processing batch... This may take a while."):
                             uploaded_file.seek(0)
@@ -892,7 +899,7 @@ with col2:
             st.markdown('<div class="section-title">Glass Forming Ability</div>', unsafe_allow_html=True)
             st.markdown('<div class="gauge-container">', unsafe_allow_html=True)
             fig_gauge = create_simple_gauge(pred['Predicted_Dmax'])
-            st.plotly_chart(fig_gauge, use_container_use_container_width=True, config={'displayModeBar': False})
+            st.plotly_chart(fig_gauge, use_container_width=True, config={'displayModeBar': False})
             st.markdown('</div>', unsafe_allow_html=True)
             
             composition = "".join([f"{elem}{int(st.session_state.element_fractions[elem])}" 
@@ -921,7 +928,7 @@ with col2:
                 </div>
             </div>
             ''', unsafe_allow_html=True)
-            if st.button("🔄 Try Again", use_container_use_container_width=True, type="secondary"):
+            if st.button("🔄 Try Again", use_container_width=True, type="secondary"):
                 st.session_state.prediction_error = None
                 st.session_state.predictions = None
                 st.rerun()
@@ -943,7 +950,7 @@ with col2:
         if st.session_state.batch_results is not None:
             st.markdown('<div class="section-title">Batch Results</div>', unsafe_allow_html=True)
             st.markdown('<div class="glass-card">', unsafe_allow_html=True)
-            st.dataframe(st.session_state.batch_results, use_container_use_container_width=True)
+            st.dataframe(st.session_state.batch_results, use_container_width=True)
             st.markdown(get_download_link(st.session_state.batch_results, "batch_predictions.csv"), unsafe_allow_html=True)
             st.markdown('</div>', unsafe_allow_html=True)
         elif st.session_state.batch_error is not None:
@@ -957,7 +964,7 @@ with col2:
                 </div>
             </div>
             ''', unsafe_allow_html=True)
-            if st.button("🔄 Clear Error", use_container_use_container_width=True, type="secondary"):
+            if st.button("🔄 Clear Error", use_container_width=True, type="secondary"):
                 st.session_state.batch_error = None
                 st.rerun()
         else:
