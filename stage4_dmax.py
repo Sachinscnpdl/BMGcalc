@@ -115,7 +115,7 @@ def plot_dmax_parity(y_true_log, y_pred_log, save_path=None):
         plt.savefig(PARITY_PLOT)
         print(f"\n[INFO] Parity plot saved as '{PARITY_PLOT}'")
     
-    plt.show()
+    #plt.show()
 
 # ---------------- Preprocessing for Prediction ----------------
 def preprocess_data_for_prediction(X_data, artifacts):

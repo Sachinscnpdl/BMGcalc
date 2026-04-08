@@ -207,7 +207,7 @@ def plot_parity_publication(y_true, y_pred, targets=['Tg', 'Tx', 'Tl'], save_pat
     else:
         plt.savefig(PARITY_PLOT, bbox_inches='tight')
         print(f"\n[INFO] Publication-quality parity plot saved as '{PARITY_PLOT}'")
-    plt.show()
+    #plt.show()
 
 def plot_residuals_summary(y_true, y_pred, targets=['Tg', 'Tx', 'Tl'], save_path=None):
     """Create a summary residual plot for all targets together"""
@@ -259,7 +259,7 @@ def plot_residuals_summary(y_true, y_pred, targets=['Tg', 'Tx', 'Tl'], save_path
     else:
         plt.savefig(os.path.join(OUTPUT_DIR, "residuals_summary.png"), bbox_inches='tight')
         print(f"[INFO] Residual summary plot saved as '{OUTPUT_DIR}/residuals_summary.png'")
-    plt.show()
+    #plt.show()
 
 # ---------------- Training Function (modified to handle masks) ----------------
 def train_one_fold(model, train_loader, val_loader, fold_idx):
