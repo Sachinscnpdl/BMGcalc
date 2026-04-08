@@ -1,7 +1,9 @@
 streamlit
 setuptools
-numpy
-pandas
+#numpy
+#pandas
+pandas<3.0.0
+numpy<2.2.0
 scipy
 scikit-learn 
 joblib
